@@ -6,6 +6,7 @@
   "dependencies": {
     "css-loader": "^6.2.0",
     "html-webpack-plugin": "^5.3.2",
+    "is-hotkey": "^0.2.0",
     "markdown": "^0.5.0",
     "style-loader": "^3.2.1",
     "webpack": "^5.50.0"
@@ -15,7 +16,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "webpack"
+    "dev": "webpack & http-server -c-1"
   },
   "repository": {
     "type": "git",

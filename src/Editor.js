@@ -42,7 +42,7 @@ class Selection {
   range = null
   
   constructor(){
-    document.addEventListener('selectionchange', selectionchange.bind(this))
+    document.addEventListener('selectionchange', this.selectionchange.bind(this))
   }
 
   selectionchange(){
