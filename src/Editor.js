@@ -56,9 +56,12 @@ class Selection {
 const selection = new Selection()
 
 // function in
+// https://rawgit.com/w3c/input-events/v1/index.html#interface-InputEvent-Attributes
+// https://developer.mozilla.org/en-US/docs/Web/API/InputEvent/inputType
 
 class Editor {
   model = [];
+  raw = ""
 
   constructor(container) {
     this.el = document.createElement("div");
@@ -82,15 +85,23 @@ class Editor {
 
   init() {
     const { el } = this;
-    el.addEventListener("keydown", this.onkeydown.bind(this), false);
-    el.addEventListener("keypress", this.onkeypress.bind(this));
-    el.addEventListener("keyup", this.onkeyup.bind(this));
-    el.addEventListener("input", this.oninput.bind(this));
+    // el.addEventListener("keydown", this.onkeydown.bind(this), false);
+    // el.addEventListener("keypress", this.onkeypress.bind(this));
+    // el.addEventListener("keyup", this.onkeyup.bind(this));
+    // el.addEventListener("input", this.oninput.bind(this));
     el.addEventListener("beforeinput", this.beforeinput.bind(this));
   }
 
   beforeinput(event) {
-    // console.log("beforeinput", event, event.isComposing);
+    // inputType
+    // insertText, deleteContentBackward, insertFromPaste, and formatBold. For a complete list
+    console.log("beforeinput", event, event.isComposing);
+    if(!event.isComposing){
+      event.preventDefault()
+      this.raw += event.data
+      this.render()
+    }
+   
   }
 
   onkeydown(event) {
@@ -115,6 +126,10 @@ class Editor {
 
   oninput(event) {
     // console.log("oninput", event);
+  }
+
+  render(){
+    this.el.innerHTML = this.raw
   }
 }
 
