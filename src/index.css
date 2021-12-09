@@ -1,13 +1,40 @@
-html, body{
+.App {
+    font-family: sans-serif;
+    text-align: center;
+  }
+  #root{
+    outline: none;
+  }
+  
+  .md-hr {
+    -moz-user-modify: read-only;
+    -webkit-user-modify: read-only;
+  }
+  body {
+    font-family: 'Open Sans', 'Clear Sans', 'Helvetica Neue', Helvetica, Arial,
+      'Segoe UI Emoji', sans-serif;
+    color: rgb(51, 51, 51);
+    line-height: 1.6;
+  }
+  ul,
+  ol {
+    padding-left: 30px;
+  }
+  ul:first-child,
+  ol:first-child {
+    margin-top: 0;
+  }
+  ul:last-child,
+  ol:last-child {
+    margin-bottom: 0;
+  }
+  blockquote {
+    border-left: 4px solid #dfe2e5;
+    padding: 0 15px;
+    color: #777777;
     margin: 0;
-    padding: 0;
-}
-
-#app {
-    margin: 20px;
-    width: 600px;
-    min-height: 800px;
-    border: 1px solid #000;
-    display: flex;
-    flex-direction: column;
-}
+  }
+  blockquote blockquote {
+    padding-right: 0;
+  }
+  

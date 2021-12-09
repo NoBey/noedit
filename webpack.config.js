@@ -1,30 +1,53 @@
-const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-// const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const path = require('path');
+const APP_PATH = path.resolve(__dirname, 'src', 'index.tsx');
 
 module.exports = {
-  watch: true,
-  mode: "development", // "production" | "development" | "none"  // Chosen mode tells webpack to use its built-in optimizations accordingly.
-  entry: "./src/index.js",
+  entry: APP_PATH,
+
   output: {
-    path: path.resolve(__dirname, "dist"), // string
+    filename: 'bundle.js',
+    path: path.resolve(__dirname, 'dist')
+  },
+
+  resolve: {
+    extensions: ['.ts', '.tsx', '.js', '.json']
   },
 
   module: {
     rules: [
-      // {
-      //   test: /\.js$/,
-      //   exclude: /(node_modules)/,
-      //   use: {
-      //     loader: 'babel-loader',
-      //   }
-      // }
+      { test: /\.(ts|js)x?$/, loader: 'babel-loader', exclude: /node_modules/ },
       {
-        test: /\.css$/i,
-        use: ["style-loader", "css-loader"],
-      },
-    ],
+        test: [/\.css$/, /\.less$/],
+        use: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                javascriptEnabled: true
+              }
+            }
+          }
+        ]
+      }
+    ]
   },
 
-  plugins: [new HtmlWebpackPlugin()],
+  plugins: [new HtmlWebpackPlugin({ inject: true }), new ForkTsCheckerWebpackPlugin()],
+
+  performance: {
+    hints: false
+  },
+
+  devServer: {
+    host: 'localhost',
+    port: 8080,
+    compress: false
+  },
+  watchOptions: {
+    aggregateTimeout: 500 //防抖 多少毫秒后再次触发
+  }
 };

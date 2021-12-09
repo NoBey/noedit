@@ -1,0 +1,14 @@
+{
+  "presets": ["@babel/env", "@babel/typescript", "@babel/react"],
+  "plugins": [
+    [
+      "import",
+      {
+        "libraryName": "@psp/antd",
+        "style": true
+      }
+    ],
+    "@babel/proposal-class-properties",
+    "@babel/proposal-object-rest-spread"
+  ]
+}
