@@ -1,6 +1,8 @@
 import { Block } from "./block";
 
-class Selection {
+export interface SelectionInterface extends Selection{}
+
+ class Selection {
   selection = window.getSelection();
   anchorBlock = null;
   anchorOffset = null;
@@ -30,6 +32,7 @@ class Selection {
   }
 
   change() {
+    console.log('change')
     const { selection } = this;
     this.anchorBlock = Block.domToBlock(selection.anchorNode);
     this.focusBlock = Block.domToBlock(selection.focusNode);

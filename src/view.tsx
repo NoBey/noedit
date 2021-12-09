@@ -1,5 +1,5 @@
 import React, { useLayoutEffect, useRef, Fragment, forwardRef, LegacyRef } from "react";
-import { idToBlock } from "./editor";
+import { idToBlock } from "./model";
 import { editor } from "./editor";
 
 export const Blockquote = forwardRef(({ blocks }: any, ref: LegacyRef<HTMLElement>) => {
@@ -72,6 +72,7 @@ const BlockComponentMap = {
 
 export const idToDom = new Map();
 export const DomToBlock = new WeakMap();
+
 // @ts-ignore
 window.idToDom = idToDom;
 // @ts-ignore
@@ -90,28 +91,12 @@ export function BlockList({ blocks = [] }) {
 export function Root({ blocks, id }) {
   const ref = useRef<HTMLDivElement>();
   useLayoutEffect(() => {
-    function onBeforeInput(e) {
-      console.log(e.inputType, e);
-      // console.log(e.getTargetRanges());
-      if (e.inputType === "deleteContentBackward") {
-        editor.deleteContentBackward();
-      }
-      if (e.inputType === "insertText") {
-        editor.insertText(e);
-      }
-      if (e.inputType === "insertParagraph") {
-        editor.insertParagraph(e);
-      }
-
-      e.preventDefault();
-    }
-    ref.current.addEventListener("beforeinput", onBeforeInput);
-
+    ref.current.addEventListener("beforeinput", editor.onBeforeInput);
     idToDom.set(id, ref.current);
-    DomToBlock.set(ref.current, idToBlock[id]);
+    DomToBlock.set(ref.current, idToBlock.get(id));
 
     return () => {
-      idToDom.get(id).removeEventListener("beforeinput", onBeforeInput);
+      idToDom.get(id).removeEventListener("beforeinput", editor.onBeforeInput);
       DomToBlock.delete(idToDom.get(id));
       idToDom.delete(id);
     };
@@ -137,7 +122,7 @@ export function Block(props) {
   useLayoutEffect(() => {
     if (ref.current) {
       idToDom.set(props.id, ref.current);
-      DomToBlock.set(ref.current, idToBlock[props.id]);
+      DomToBlock.set(ref.current, idToBlock.get(props.id));
       ref.current.dataset["type"] = props.type;
       ref.current.dataset["id"] = props.id;
     }
