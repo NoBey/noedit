@@ -4,7 +4,16 @@
   }
   #root{
     outline: none;
+    width: 400px;
+    height: auto;
+    border: 1px solid;
+    word-break: break-all;
+    padding: 10px;
+    white-space:pre-wrap;
+    margin: 20px;
   }
+
+  
   
   .md-hr {
     -moz-user-modify: read-only;

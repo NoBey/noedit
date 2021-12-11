@@ -5,15 +5,19 @@ const APP_PATH = path.resolve(__dirname, 'src', 'index.tsx');
 
 module.exports = {
   entry: APP_PATH,
-
+  devtool: 'source-map',
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist')
   },
 
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.json']
+    extensions: ['.ts', '.tsx', '.js', '.json'],
+    alias:{
+      "src": path.resolve('src')
+    }
   },
+  
 
   module: {
     rules: [
@@ -45,7 +49,8 @@ module.exports = {
   devServer: {
     host: 'localhost',
     port: 8080,
-    compress: false
+    compress: false,
+    host: "0.0.0.0"
   },
   watchOptions: {
     aggregateTimeout: 500 //防抖 多少毫秒后再次触发

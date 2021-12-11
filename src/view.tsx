@@ -1,5 +1,4 @@
-import React, { useLayoutEffect, useRef, Fragment, forwardRef, LegacyRef } from "react";
-import { idToBlock } from "./model";
+import React, { useLayoutEffect, useRef, Fragment, forwardRef, LegacyRef, KeyboardEvent } from "react";
 import { editor } from "./editor";
 
 export const Blockquote = forwardRef(({ blocks }: any, ref: LegacyRef<HTMLElement>) => {
@@ -9,6 +8,15 @@ export const Blockquote = forwardRef(({ blocks }: any, ref: LegacyRef<HTMLElemen
     </blockquote>
   );
 });
+
+export const Hr = forwardRef((props, ref: LegacyRef<HTMLDivElement>) => {
+  return (
+    <div ref={ref} className="md-hr">
+      <hr />
+    </div>
+  );
+})
+
 
 export let path = [];
 
@@ -92,8 +100,15 @@ export function Root({ blocks, id }) {
   const ref = useRef<HTMLDivElement>();
   useLayoutEffect(() => {
     ref.current.addEventListener("beforeinput", editor.onBeforeInput);
+    ref.current.addEventListener('compositionstart', editor.onCompositionstart);
+    ref.current.addEventListener(
+      'compositionupdate',
+      editor.onCompositionupdate
+    );
+    ref.current.addEventListener('compositionend', editor.onCompositionend);
+
     idToDom.set(id, ref.current);
-    DomToBlock.set(ref.current, idToBlock.get(id));
+    DomToBlock.set(ref.current, editor.idToBlock.get(id));
 
     return () => {
       idToDom.get(id).removeEventListener("beforeinput", editor.onBeforeInput);
@@ -101,6 +116,13 @@ export function Root({ blocks, id }) {
       idToDom.delete(id);
     };
   }, [id]);
+
+  const onKeyDown = (event: KeyboardEvent) => {
+    console.log('onKeyDown')
+    if(event.metaKey && event.key === 'z'){
+      editor.history.undo()
+    }
+  }
 
   path.length = 0;
 
@@ -110,6 +132,8 @@ export function Root({ blocks, id }) {
       ref={ref}
       contentEditable
       suppressContentEditableWarning={true}
+      spellCheck={false}
+      onKeyDown={onKeyDown}
     >
       <BlockList blocks={blocks} />
     </div>
@@ -122,7 +146,7 @@ export function Block(props) {
   useLayoutEffect(() => {
     if (ref.current) {
       idToDom.set(props.id, ref.current);
-      DomToBlock.set(ref.current, idToBlock.get(props.id));
+      DomToBlock.set(ref.current, editor.idToBlock.get(props.id));
       ref.current.dataset["type"] = props.type;
       ref.current.dataset["id"] = props.id;
     }
@@ -134,10 +158,3 @@ export function Block(props) {
   return <BlockComponent ref={ref} {...props} />;
 }
 
-export function Hr() {
-  return (
-    <div className="md-hr">
-      <hr />
-    </div>
-  );
-}

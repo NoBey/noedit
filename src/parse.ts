@@ -3,6 +3,15 @@ import * as marked from "marked";
 const defaultTxt = `
 # dsffs
 
+
+fsd
+
+---
+
+fsd
+
+
+
 > 334
 > - 3434dd
  - *Fudge**77*
@@ -12,6 +21,13 @@ const defaultTxt = `
 
 87878
 
+dsfdd
+
+4r45
+
+fgdfg
+
+
 `;
 
 function formatBlock(token) {
@@ -20,7 +36,7 @@ function formatBlock(token) {
       token.type
     )
   ) {
-    const block = { ...token, isBlock: true };
+    const block = { blocks:[], ...token, isBlock: true };
     if (block.type === "list_item") {
       if (block?.tokens[0] && block?.tokens[0].type === "text") {
         block.tokens[0].type = "paragraph";
@@ -41,6 +57,7 @@ function formatBlock(token) {
 
 export function parseMD(md = defaultTxt) {
   const tokens = new marked.Lexer({ breaks: true }).lex(md);
+  console.log(tokens)
   return {
     type: "root",
     blocks: tokens.map(formatBlock).filter((n) => n),

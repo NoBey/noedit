@@ -1,20 +1,21 @@
 import { Block } from "./block";
+import { BlockInterface } from "./model";
 
 export interface SelectionInterface extends Selection{}
 
  class Selection {
   selection = window.getSelection();
-  anchorBlock = null;
-  anchorOffset = null;
-  focusOffset = null;
-  focusBlock = null;
-  commonAncestor = null;
-  range = null;
+  anchorBlock?: BlockInterface;
+  anchorOffset?: number
+  focusOffset?: number
+  focusBlock?: BlockInterface;
+  commonAncestor?: BlockInterface;
+  range: Range = null;
   type = "None";
-  startContainer = null;
-  endContainer = null;
-  startOffset = null;
-  endOffset = null;
+  startContainer?: BlockInterface;
+  endContainer?: BlockInterface;
+  startOffset?: number
+  endOffset?: number
 
   constructor() {
     document.addEventListener("selectionchange", this.change.bind(this));
@@ -32,8 +33,9 @@ export interface SelectionInterface extends Selection{}
   }
 
   change() {
-    console.log('change')
     const { selection } = this;
+    console.log('change', selection)
+
     this.anchorBlock = Block.domToBlock(selection.anchorNode);
     this.focusBlock = Block.domToBlock(selection.focusNode);
     this.type = selection.type;
