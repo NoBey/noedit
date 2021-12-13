@@ -9,6 +9,7 @@ import {
   BlockquoteInputEvent,
   InputEventStrategy,
   ListInputEvent,
+  CodeInputEvent
 } from "./inputEvent";
 import { History } from "./history";
 
@@ -25,6 +26,7 @@ export class Editor {
     this.inputStrategys.push(new BaseInputEvent());
     this.inputStrategys.push(new BlockquoteInputEvent());
     this.inputStrategys.push(new ListInputEvent());
+    this.inputStrategys.push(new CodeInputEvent());
 
     Event.on("block-change", this.blockChange.bind(this));
   }
@@ -67,7 +69,7 @@ export class Editor {
 
   onBeforeInput = (event: InputEvent) => {
     const { inputType } = event;
-
+    // if(this.selection.focusBlock.type === "code") return
     if (
       this.isComposing ||
       inputType === "insertCompositionText" ||

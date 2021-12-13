@@ -1,16 +1,12 @@
-import * as marked from "marked";
+import {marked} from "marked";
 
-const defaultTxt = `
+let defaultTxt = `
 # dsffs
-
-
-fsd
-
 ---
 
-fsd
-
-
+| sd | sd |
+|---|---| 
+|ds|sdd|
 
 > 334
 > - 3434dd
@@ -18,6 +14,7 @@ fsd
 
 - dsds
 - sddfs
+
 
 87878
 
@@ -27,12 +24,26 @@ dsfdd
 
 fgdfg
 
-
 `;
+
+defaultTxt = defaultTxt 
++ '```js'
++ "\nvar a = 1"
++ "\nconsole.log(a)"
++ "\n```"
++ "\n"
++ "\n"
+
++ 'sfsdf'
+// + '```js'
+// + "\n//dsdsd"
+// + "\n//sddsd"
+// + "\n```"
+// + "\n1"
 
 function formatBlock(token) {
   if (
-    ["blockquote", "heading", "list", "list_item", "paragraph", "hr"].includes(
+    ["blockquote", "heading", "list", "list_item", "paragraph", "hr", "code", "table"].includes(
       token.type
     )
   ) {
@@ -50,13 +61,21 @@ function formatBlock(token) {
       if (block?.items?.length === 0) return;
       block.blocks = block?.items.map(formatBlock).filter((n) => n);
     }
+    if(block.type === 'table'){
+      block.header.forEach(b => {
+        b.type = "paragraph"
+      });
+      block.rows.flat(99).forEach(b => {
+        b.type = "paragraph"
+      });
+    }
 
     return block;
   }
 }
 
 export function parseMD(md = defaultTxt) {
-  const tokens = new marked.Lexer({ breaks: true }).lex(md);
+  const tokens = marked.lexer(md) // new marked.Lexer({ breaks: true }).lex(md);
   console.log(tokens)
   return {
     type: "root",

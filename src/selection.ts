@@ -52,6 +52,12 @@ export interface SelectionInterface extends Selection{}
       this.endContainer = Block.domToBlock(range?.endContainer);
       this.commonAncestor = Block.domToBlock(range.commonAncestorContainer);
     }
+    // if(this.focusBlock.type === "code"){
+    //   document.querySelector('#root').setAttribute('contentEditable', 'false')
+    //   // contentEditable
+    // }else{
+    //   document.querySelector('#root').setAttribute('contentEditable', 'true')
+    // }
   }
   // setRange() {}
 }

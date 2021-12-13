@@ -49,6 +49,16 @@ export class ListInputEvent implements InputEventStrategy {
     }
     if (inputType === "insertParagraph") {
       if (focusBlock.parent.blocks.indexOf(focusBlock) === 0) {
+
+        if(focusBlock.text === "" && focusBlock.parent.blocks.length === 1){
+          if(focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) === focusBlock.parent.parent.blocks.length -1){
+            editor.model.deleteBlock(focusBlock.parent.id);
+            editor.model.insertAfter(focusBlock.parent.parent, focusBlock)
+            return 
+          }
+        }
+
+
         const newBlock = Block.createListItemBlock(
           Block.createParagraphBlock(focusBlock.text.slice(focusOffset))
         );

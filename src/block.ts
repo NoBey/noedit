@@ -20,7 +20,6 @@ const Block = {
   },
   range(range) {
     const { endContainer, startContainer, endOffset, startOffset } = range;
-    console.log(range);
     return {
       endOffset,
       startOffset,

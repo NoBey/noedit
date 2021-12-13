@@ -1,13 +1,26 @@
-import React, { useLayoutEffect, useRef, Fragment, forwardRef, LegacyRef, KeyboardEvent } from "react";
+import React, {
+  useLayoutEffect,
+  useRef,
+  Fragment,
+  forwardRef,
+  LegacyRef,
+  KeyboardEvent,
+} from "react";
 import { editor } from "./editor";
+import { Block as BlockUtil } from "./block";
+// import ReactPrismEditor from "react-prism-editor";
+import Prism from "prismjs";
+import "prismjs/themes/prism.css";
 
-export const Blockquote = forwardRef(({ blocks }: any, ref: LegacyRef<HTMLElement>) => {
-  return (
-    <blockquote ref={ref}>
-      <BlockList blocks={blocks} />
-    </blockquote>
-  );
-});
+export const Blockquote = forwardRef(
+  ({ blocks }: any, ref: LegacyRef<HTMLElement>) => {
+    return (
+      <blockquote ref={ref}>
+        <BlockList blocks={blocks} />
+      </blockquote>
+    );
+  }
+);
 
 export const Hr = forwardRef((props, ref: LegacyRef<HTMLDivElement>) => {
   return (
@@ -15,8 +28,65 @@ export const Hr = forwardRef((props, ref: LegacyRef<HTMLDivElement>) => {
       <hr />
     </div>
   );
-})
+});
 
+export const Table = forwardRef(
+  (props: any, ref: LegacyRef<HTMLTableElement>) => {
+    return (
+      <table ref={ref} className="md-table">
+        <thead>
+          <tr>
+            {props.header.map((b) => (
+              <th>
+                <Block {...b} />
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {props.rows.map((row) => (
+            <tr>
+              {row.map((b) => (
+                <td>
+                  <Block {...b} />
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+);
+
+export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
+  useLayoutEffect(() => {
+    // console.log('Code')
+    // @ts-ignore
+    ref.current.addEventListener("input", (e) => {
+      console.log("onInput", e);
+    });
+    // @ts-ignore
+    ref.current.addEventListener("foucs", (e) => {
+      console.log("foucs", e);
+    });
+  }, []);
+  const html = Prism.highlight(
+    props.text,
+    Prism.languages.javascript,
+    "javascript"
+  );
+  console.log(html);
+  return (
+    <div className="md-code" ref={ref}>
+      <code style={{position: 'absolute',top: 0, pointerEvents: 'none', userSelect: 'none' }} dangerouslySetInnerHTML={{ __html: html }} ></code>
+
+      <code>
+        {props.text}
+      </code>
+    </div>
+  );
+});
 
 export let path = [];
 
@@ -28,44 +98,52 @@ export const InlineText = ({ text, id }) => {
 export const Heading = forwardRef(({ text, depth, id }: any, ref: any) => {
   const H = "h" + depth;
   return (
-   // @ts-ignore
+    // @ts-ignore
     <H ref={ref}>
       <InlineText text={text} id={id} />
     </H>
   );
 });
 
-export const List = forwardRef(({ blocks }: any, ref: LegacyRef<HTMLUListElement>) => {
-  return (
-    <ul ref={ref}>
-      <BlockList blocks={blocks} />
-    </ul>
-  );
-});
+export const List = forwardRef(
+  ({ blocks }: any, ref: LegacyRef<HTMLUListElement>) => {
+    return (
+      <ul ref={ref}>
+        <BlockList blocks={blocks} />
+      </ul>
+    );
+  }
+);
 
-export const ListItem = forwardRef(({ blocks }: any, ref: LegacyRef<HTMLLIElement>) => {
-  return (
-    <li ref={ref}>
-      <BlockList blocks={blocks} />
-    </li>
-  );
-});
+export const ListItem = forwardRef(
+  ({ blocks }: any, ref: LegacyRef<HTMLLIElement>) => {
+    return (
+      <li ref={ref}>
+        <BlockList blocks={blocks} />
+      </li>
+    );
+  }
+);
 
-export const Paragraph = forwardRef(({ text, id }: any, ref :LegacyRef<HTMLParagraphElement>) => {
-  return (
-    <p ref={ref}>
-      <InlineText text={text} id={id} />
-    </p>
-  );
-});
+export const Paragraph = forwardRef(
+  ({ text, id }: any, ref: LegacyRef<HTMLParagraphElement>) => {
+    return (
+      <p ref={ref}>
+        <InlineText text={text} id={id} />
+      </p>
+    );
+  }
+);
 
-export const TextBlock = forwardRef(({ text, id }: any, ref: LegacyRef<HTMLParagraphElement>) => {
-  return (
-    <p ref={ref}>
-      <InlineText text={text} id={id} />
-    </p>
-  );
-});
+export const TextBlock = forwardRef(
+  ({ text, id }: any, ref: LegacyRef<HTMLParagraphElement>) => {
+    return (
+      <p ref={ref}>
+        <InlineText text={text} id={id} />
+      </p>
+    );
+  }
+);
 
 const BlockComponentMap = {
   hr: Hr,
@@ -75,7 +153,9 @@ const BlockComponentMap = {
   heading: Heading,
   blockquote: Blockquote,
   space: () => <></>,
-  text: TextBlock
+  text: TextBlock,
+  code: Code,
+  table: Table,
 };
 
 export const idToDom = new Map();
@@ -100,12 +180,12 @@ export function Root({ blocks, id }) {
   const ref = useRef<HTMLDivElement>();
   useLayoutEffect(() => {
     ref.current.addEventListener("beforeinput", editor.onBeforeInput);
-    ref.current.addEventListener('compositionstart', editor.onCompositionstart);
+    ref.current.addEventListener("compositionstart", editor.onCompositionstart);
     ref.current.addEventListener(
-      'compositionupdate',
+      "compositionupdate",
       editor.onCompositionupdate
     );
-    ref.current.addEventListener('compositionend', editor.onCompositionend);
+    ref.current.addEventListener("compositionend", editor.onCompositionend);
 
     idToDom.set(id, ref.current);
     DomToBlock.set(ref.current, editor.idToBlock.get(id));
@@ -118,11 +198,10 @@ export function Root({ blocks, id }) {
   }, [id]);
 
   const onKeyDown = (event: KeyboardEvent) => {
-    console.log('onKeyDown')
-    if(event.metaKey && event.key === 'z'){
-      editor.history.undo()
+    if (event.metaKey && event.key === "z") {
+      editor.history.undo();
     }
-  }
+  };
 
   path.length = 0;
 
@@ -157,4 +236,3 @@ export function Block(props) {
   }, [props.id]);
   return <BlockComponent ref={ref} {...props} />;
 }
-

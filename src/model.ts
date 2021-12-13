@@ -9,6 +9,8 @@ export interface BlockInterface {
   blocks?: BlockInterface[];
   type: string;
   text?: string;
+  header?:  BlockInterface[];
+  rows?:  BlockInterface[][];
 }
 
 let index = 0;
@@ -24,11 +26,17 @@ export function createModel(editor, _model: BlockInterface) {
     block.parent = parent;
     if (!block.id) block.id = ++index;
     editor.idToBlock.set(block.id, block);
-    block.blocks.forEach((b) => normalize(b, block));
+    block?.blocks?.forEach((b) => normalize(b, block));
     if (["list_item", "blockquote", "list"].includes(block.type)) {
       if (block.blocks.length === 0) {
         model.deleteBlock(block.id);
       }
+    }
+    if(block.type === 'table'){
+    block.header.forEach((b) => normalize(b, block));
+    block.rows.forEach((row = []) => row.forEach(b => {
+      normalize(b, block)
+    }));
     }
     return block;
   };
@@ -52,7 +60,6 @@ export function createModel(editor, _model: BlockInterface) {
       model.applyOperation(createDelOperation(id));
     },
     applyOperation(operation) {
-      console.log({ operation })
       const { type, arg } = operation;
       if (type === "update") {
         const block = Block.getBlockByid(arg.id);

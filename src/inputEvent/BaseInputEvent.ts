@@ -11,7 +11,6 @@ export class BaseInputEvent implements InputEventStrategy {
       }
       if (inputType === "insertText") {
         editor.model.deleteContent(event.getTargetRanges()[0]);
-        console.log(event.data);
         editor.model.insertText(event.data);
       }
       if (inputType === "insertParagraph") {

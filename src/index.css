@@ -1,49 +1,70 @@
 .App {
-    font-family: sans-serif;
-    text-align: center;
-  }
-  #root{
-    outline: none;
-    width: 400px;
-    height: auto;
-    border: 1px solid;
-    word-break: break-all;
-    padding: 10px;
-    white-space:pre-wrap;
-    margin: 20px;
-  }
+  font-family: sans-serif;
+  text-align: center;
+}
+#root {
+  outline: none;
+  width: 400px;
+  height: auto;
+  border: 1px solid;
+  word-break: break-all;
+  padding: 10px;
+  white-space: pre-wrap;
+  margin: 20px;
+}
 
-  
-  
-  .md-hr {
-    -moz-user-modify: read-only;
-    -webkit-user-modify: read-only;
-  }
-  body {
-    font-family: 'Open Sans', 'Clear Sans', 'Helvetica Neue', Helvetica, Arial,
-      'Segoe UI Emoji', sans-serif;
-    color: rgb(51, 51, 51);
-    line-height: 1.6;
-  }
-  ul,
-  ol {
-    padding-left: 30px;
-  }
-  ul:first-child,
-  ol:first-child {
-    margin-top: 0;
-  }
-  ul:last-child,
-  ol:last-child {
-    margin-bottom: 0;
-  }
-  blockquote {
-    border-left: 4px solid #dfe2e5;
-    padding: 0 15px;
-    color: #777777;
-    margin: 0;
-  }
-  blockquote blockquote {
-    padding-right: 0;
-  }
-  
+.md-hr {
+  -moz-user-modify: read-only;
+  -webkit-user-modify: read-only;
+}
+body {
+  font-family: "Open Sans", "Clear Sans", "Helvetica Neue", Helvetica, Arial,
+    "Segoe UI Emoji", sans-serif;
+  color: rgb(51, 51, 51);
+  line-height: 1.6;
+}
+ul,
+ol {
+  padding-left: 30px;
+}
+ul:first-child,
+ol:first-child {
+  margin-top: 0;
+}
+ul:last-child,
+ol:last-child {
+  margin-bottom: 0;
+}
+blockquote {
+  border-left: 4px solid #dfe2e5;
+  padding: 0 15px;
+  color: #777777;
+  margin: 0;
+}
+blockquote blockquote {
+  padding-right: 0;
+}
+
+table {
+  border-collapse: collapse;
+  min-width: 300px;
+}
+table,
+th,
+td {
+  border: 1px solid black;
+}
+
+code {
+  width: 100%;
+  display: block;
+  padding: 8px;
+  border: 1px solid black;
+  border-radius: 3px;
+  box-sizing: border-box;
+  min-height: 38px;
+}
+.md-code {
+  position: relative;
+  width: 100%;
+}

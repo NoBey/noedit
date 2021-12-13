@@ -6,3 +6,4 @@ export interface InputEventStrategy {
 export * from './BaseInputEvent'
 export * from './BlockquoteInputEvent'
 export * from './ListInputEvent'
+export * from './CodeInputEvent'
