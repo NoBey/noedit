@@ -11,6 +11,8 @@ import { Block as BlockUtil } from "./block";
 // import ReactPrismEditor from "react-prism-editor";
 import Prism from "prismjs";
 import "prismjs/themes/prism.css";
+// @ts-ignore
+window.Prism = Prism
 
 export const Blockquote = forwardRef(
   ({ blocks }: any, ref: LegacyRef<HTMLElement>) => {
@@ -73,9 +75,10 @@ export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
   }, []);
   const html = Prism.highlight(
     props.text,
-    Prism.languages.javascript,
-    "javascript"
+    Prism.languages[props.lang],
+    props.lang
   );
+  path.push(props.id);
   console.log(html);
   return (
     <div className="md-code" ref={ref}>

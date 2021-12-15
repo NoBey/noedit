@@ -9,7 +9,8 @@ export class BlockquoteInputEvent implements InputEventStrategy {
         focusOffset === 0 &&
         inputType.startsWith("delete") &&
         focusBlock.parent.type === "blockquote" &&
-        focusBlock.parent.blocks.indexOf(focusBlock) === 0
+        focusBlock.parent.blocks.indexOf(focusBlock) === 0 && 
+        selection.type === "Caret"
       ) {
         return true
       }

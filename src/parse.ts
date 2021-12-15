@@ -1,5 +1,6 @@
 import {marked} from "marked";
-
+// @ts-ignore
+window.marked =marked
 let defaultTxt = `
 # dsffs
 ---
