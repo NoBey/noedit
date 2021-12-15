@@ -2,6 +2,7 @@ import { idToDom, DomToBlock } from "./view";
 import { BlockInterface } from "./model";
 import { path } from "./view";
 import { editor } from "./editor";
+import { iterationTextNode } from "./utils";
 
 // interface Range {
 //   collapsed: boolean;
@@ -18,13 +19,24 @@ const Block = {
     }
     return DomToBlock.get(domNode);
   },
+  fixOffset(node: Node, offset: number = 0){
+    let parent = node
+    while( parent && !DomToBlock.get(parent)) parent = parent.parentNode
+    for (let tnode  of iterationTextNode(parent)) {
+      if(tnode === node) break
+      offset += tnode.length
+    }
+    return { node: parent, offset, block: DomToBlock.get(parent) }
+  },
   range(range) {
     const { endContainer, startContainer, endOffset, startOffset } = range;
+    const start = Block.fixOffset(startContainer, startOffset)
+    const end = Block.fixOffset(endContainer, endOffset)
     return {
-      endOffset,
-      startOffset,
-      startContainer: Block.domToBlock(startContainer),
-      endContainer: Block.domToBlock(endContainer),
+      endOffset: end.offset,
+      startOffset: start.offset,
+      startContainer: start.block,
+      endContainer: end.block,
     };
   },
   contains(parentBlocks: BlockInterface, block: BlockInterface){

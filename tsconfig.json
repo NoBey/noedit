@@ -9,7 +9,7 @@
     "allowSyntheticDefaultImports": true,
     "noFallthroughCasesInSwitch": true,
     "module": "ESNext",
-    "target": "ESNext",
+    "target": "es6",
     "lib": ["es2015", "dom"],
     "importHelpers": true,
     "sourceMap": true,

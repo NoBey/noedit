@@ -1,5 +1,6 @@
 import { Block } from "./block";
 import { BlockInterface } from "./model";
+import { iterationTextNode } from "./utils";
 
 export interface SelectionInterface extends Selection{}
 
@@ -24,11 +25,20 @@ export interface SelectionInterface extends Selection{}
   collapse(block, offset = 0) {
     this.focusBlock = block;
     this.focusOffset = offset;
-    const dom = Block.getTextByid(block.id);
+    // const dom = Block.getTextByid(block.id);
     // dom && this.selection.collapse(dom, dom.nodeName === "BR" ? 0 : offset);
   }
   reset() {
     const { focusBlock, focusOffset } = this;
+    const dom = Block.getDomByid(focusBlock.id)
+    let offset = focusOffset
+    for(let tnode of iterationTextNode(dom)) {
+      if(tnode.length >= offset){
+        return this.selection.collapse(tnode, offset);
+      }else{
+        offset -= tnode.length
+      }
+    }
     this.selection.collapse(Block.getTextByid(focusBlock.id), focusOffset);
   }
 
@@ -36,21 +46,26 @@ export interface SelectionInterface extends Selection{}
     const { selection } = this;
     console.log('change', selection)
 
-    this.anchorBlock = Block.domToBlock(selection.anchorNode);
-    this.focusBlock = Block.domToBlock(selection.focusNode);
+    const anchor = Block.fixOffset(selection.anchorNode, selection.anchorOffset)
+    const focus = Block.fixOffset(selection.focusNode, selection.focusOffset)
+    
+    this.anchorBlock = anchor.block
+    this.anchorOffset = anchor.offset
+    this.focusBlock = focus.block
+    this.focusOffset = focus.offset
+
     this.type = selection.type;
-    this.anchorOffset = selection.anchorOffset;
-    this.focusOffset = selection.focusOffset;
     // console.log(selection.anchorNode);
     this.range = null;
     if (selection.type === "Range") {
-      const range = selection.getRangeAt(0);
-      this.range = range;
-      this.startOffset = range.startOffset;
-      this.endOffset = range.endOffset;
-      this.startContainer = Block.domToBlock(range?.startContainer);
-      this.endContainer = Block.domToBlock(range?.endContainer);
-      this.commonAncestor = Block.domToBlock(range.commonAncestorContainer);
+      const _range = selection.getRangeAt(0);
+      const { startContainer, startOffset, endContainer, endOffset } = Block.range(_range)
+      this.range = _range;
+      this.startOffset = startOffset;
+      this.endOffset = endOffset;
+      this.startContainer = startContainer;
+      this.endContainer = endContainer
+      this.commonAncestor = Block.domToBlock(_range.commonAncestorContainer);
     }
     // if(this.focusBlock.type === "code"){
     //   document.querySelector('#root').setAttribute('contentEditable', 'false')
@@ -64,4 +79,4 @@ export interface SelectionInterface extends Selection{}
 
 export const selection = new Selection();
 // @ts-ignore
-window.selection = selection;
+// window.selection = selection;

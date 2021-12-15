@@ -1,3 +1,4 @@
+import 'regenerator-runtime/runtime'
 import ReactDOM from "react-dom";
 import React, { useEffect, useState } from "react";
 import "./index.css";

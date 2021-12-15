@@ -9,6 +9,10 @@
       }
     ],
     "@babel/proposal-class-properties",
-    "@babel/proposal-object-rest-spread"
+    "@babel/proposal-object-rest-spread",
+    ["@babel/plugin-transform-for-of", {
+      // "loose": true, // defaults to false
+      // "assumeArray": true // defaults to false
+    }]
   ]
 }

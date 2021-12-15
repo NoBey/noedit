@@ -79,11 +79,8 @@ export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
   console.log(html);
   return (
     <div className="md-code" ref={ref}>
-      <code style={{position: 'absolute',top: 0, pointerEvents: 'none', userSelect: 'none' }} dangerouslySetInnerHTML={{ __html: html }} ></code>
-
-      <code>
-        {props.text}
-      </code>
+      {/* <code style={{position: 'absolute',top: 0, pointerEvents: 'none', userSelect: 'none' }} dangerouslySetInnerHTML={{ __html: html }} ></code> */}
+      <code dangerouslySetInnerHTML={{ __html: html }}></code>
     </div>
   );
 });

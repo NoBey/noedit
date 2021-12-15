@@ -16,12 +16,14 @@
     "react": "17.x",
     "react-dom": "17.x",
     "react-is": "^17.0.2",
-    "react-prism-editor": "^1.1.2"
+    "react-prism-editor": "^1.1.2",
+    "regenerator-runtime": "^0.13.9"
   },
   "devDependencies": {
     "@babel/core": "7.15.8",
     "@babel/plugin-proposal-class-properties": "7.14.5",
     "@babel/plugin-proposal-object-rest-spread": "7.15.6",
+    "@babel/plugin-transform-for-of": "^7.16.5",
     "@babel/preset-env": "7.15.8",
     "@babel/preset-react": "7.14.5",
     "@babel/preset-typescript": "7.15.0",
