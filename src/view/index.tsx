@@ -6,13 +6,17 @@ import React, {
   LegacyRef,
   KeyboardEvent,
 } from "react";
-import { editor } from "./editor";
-import { Block as BlockUtil } from "./block";
+import { editor } from "../editor";
+import { Block as BlockUtil } from "../block";
 // import ReactPrismEditor from "react-prism-editor";
 import Prism from "prismjs";
 import "prismjs/themes/prism.css";
 // @ts-ignore
 window.Prism = Prism
+import { InlineText } from "./inline";
+
+export let path = [];
+
 
 export const Blockquote = forwardRef(
   ({ blocks }: any, ref: LegacyRef<HTMLElement>) => {
@@ -38,18 +42,18 @@ export const Table = forwardRef(
       <table ref={ref} className="md-table">
         <thead>
           <tr>
-            {props.header.map((b) => (
-              <th>
+            {props.header.map((b, i) => (
+              <th key={i}>
                 <Block {...b} />
               </th>
             ))}
           </tr>
         </thead>
         <tbody>
-          {props.rows.map((row) => (
-            <tr>
-              {row.map((b) => (
-                <td>
+          {props.rows.map((row, i) => (
+            <tr key={i}>
+              {row.map((b, i) => (
+                <td key={i}>
                   <Block {...b} />
                 </td>
               ))}
@@ -65,13 +69,7 @@ export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
   useLayoutEffect(() => {
     // console.log('Code')
     // @ts-ignore
-    ref.current.addEventListener("input", (e) => {
-      console.log("onInput", e);
-    });
-    // @ts-ignore
-    ref.current.addEventListener("foucs", (e) => {
-      console.log("foucs", e);
-    });
+
   }, []);
   const html = Prism.highlight(
     props.text,
@@ -79,7 +77,6 @@ export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
     props.lang
   );
   path.push(props.id);
-  console.log(html);
   return (
     <div className="md-code" ref={ref}>
       {/* <code style={{position: 'absolute',top: 0, pointerEvents: 'none', userSelect: 'none' }} dangerouslySetInnerHTML={{ __html: html }} ></code> */}
@@ -88,12 +85,8 @@ export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
   );
 });
 
-export let path = [];
 
-export const InlineText = ({ text, id }) => {
-  path.push(id);
-  return <>{text || <br />}</>;
-};
+
 
 export const Heading = forwardRef(({ text, depth, id }: any, ref: any) => {
   const H = "h" + depth;

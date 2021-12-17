@@ -1,7 +1,7 @@
 import 'regenerator-runtime/runtime'
 import ReactDOM from "react-dom";
 import React, { useEffect, useState } from "react";
-import "./index.css";
+import "./index.less";
 import { Root } from "./view";
 import { editor } from "./editor";
 import { selection } from "./selection";

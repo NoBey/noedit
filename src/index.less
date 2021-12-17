@@ -17,6 +17,9 @@
   -moz-user-modify: read-only;
   -webkit-user-modify: read-only;
 }
+a{
+  color:#4183C4;
+}
 .md-hr hr {
   height: 2px;
   padding: 0;
@@ -26,6 +29,19 @@
   overflow: hidden;
   box-sizing: content-box;
 }
+
+.inline{
+  &-meta, &-before, &-after{
+    display: none;
+  }
+}
+
+.inline-focus{
+  .inline-meta, .inline-before, .inline-after{
+    display: inline;
+  }
+}
+
 
 body {
   font-family: "Open Sans", "Clear Sans", "Helvetica Neue", Helvetica, Arial,
@@ -78,3 +94,5 @@ code {
   position: relative;
   width: 100%;
 }
+
+

@@ -41,10 +41,26 @@ export interface SelectionInterface extends Selection{}
     }
     this.selection.collapse(Block.getTextByid(focusBlock.id), focusOffset);
   }
+  focusInline({ focusNode }){
+    
+    Array.from(document.querySelectorAll('.inline-focus')).forEach(dom => {
+      dom.classList.remove('inline-focus')
+    });
 
+    let node = focusNode
+    while(!node?.dataset?.type){
+      console.log(node)
+      if(node?.classList?.contains('inline')){
+        node?.classList.add('inline-focus')
+      }
+      node = node.parentElement
+    }
+  }
   change() {
     const { selection } = this;
-    console.log('change', selection)
+    // console.log('change', selection)
+
+    if(selection.type === 'Caret') this.focusInline(selection)
 
     const anchor = Block.fixOffset(selection.anchorNode, selection.anchorOffset)
     const focus = Block.fixOffset(selection.focusNode, selection.focusOffset)
