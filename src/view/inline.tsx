@@ -30,7 +30,10 @@ function tokenToHtml(token){
         return `<span class='inline'>${inline.link(token)}</span>` 
     }
     const [before, after] = token.raw.split(token.text)
-    const content = inline.type(token.type, token.tokens.map(tokenToHtml).join(''))
+    // if(token.type === 'codespan'){
+    //   return  `<span class='inline'>${inline.before(before)}${token.text}${inline.after(after)}</span>` 
+    // }
+    const content = inline.type(token.type, token?.tokens?.map(tokenToHtml)?.join('') || token.text)
 
     return `<span class='inline'>${inline.before(before)}${content}${inline.after(after)}</span>` 
 }
