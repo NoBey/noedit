@@ -49,7 +49,6 @@ export interface SelectionInterface extends Selection{}
 
     let node = focusNode
     while(!node?.dataset?.type){
-      console.log(node)
       if(node?.classList?.contains('inline')){
         node?.classList.add('inline-focus')
       }

@@ -23,10 +23,36 @@ module.exports = {
     rules: [
       { test: /\.(ts|js)x?$/, loader: 'babel-loader', exclude: /node_modules/ },
       {
-        test: [/\.css$/, /\.less$/],
+        test: [/\.module.css$/, /\.module.less$/],
         use: [
           'style-loader',
-          'css-loader',
+          {
+            loader: "css-loader",
+            options: {
+              modules: true,
+            },
+          },
+          {
+            loader: 'less-loader',
+            options: {
+              lessOptions: {
+                javascriptEnabled: true
+              }
+            }
+          }
+        ]
+      },
+      {
+        test: [/\.css$/, /\.less$/],
+        exclude:[/\.module.css$/, /\.module.less$/],
+        use: [
+          'style-loader',
+          {
+            loader: "css-loader",
+            options: {
+              modules: false,
+            },
+          },
           {
             loader: 'less-loader',
             options: {

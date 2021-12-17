@@ -5,6 +5,7 @@ import "./index.less";
 import { Root } from "./view";
 import { editor } from "./editor";
 import { selection } from "./selection";
+import { Menu } from './component';
 // .lexer('> I am using marked.')
 
 export  function App() {
@@ -12,7 +13,9 @@ export  function App() {
   useEffect(() => {
     editor.model.onChange(() => setModel({ ...editor.model._model }));
   }, []);
-  return <Root blocks={model.blocks}  id={model.id} />;
+  return <>
+  <Root blocks={model.blocks}  id={model.id} />
+  </>
 }
 
 
