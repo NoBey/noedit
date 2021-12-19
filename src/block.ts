@@ -3,6 +3,7 @@ import { BlockInterface } from "./model";
 import { path } from "./view";
 import { editor } from "./editor";
 import { iterationTextNode } from "./utils";
+import { marked } from "marked";
 
 // interface Range {
 //   collapsed: boolean;
@@ -22,7 +23,8 @@ const Block = {
   fixOffset(node: Node, offset: number = 0){
     let parent = node
     while( parent && !DomToBlock.get(parent)) parent = parent.parentNode
-    for (let tnode  of iterationTextNode(parent)) {
+    if(parent === node) return { node, offset, block: DomToBlock.get(node) }
+    for (let tnode of iterationTextNode(parent)) {
       if(tnode === node) break
       offset += tnode.length
     }
@@ -98,6 +100,9 @@ const Block = {
       isBlock: true,
       type: "list",
     };
+  },
+  createHeading(text = '# ') {
+    return {...marked.lexer(text)[0], blocks: []} as BlockInterface;
   },
   getPreviousBlock(block: BlockInterface) {
     const index = block.parent.blocks.indexOf(block)

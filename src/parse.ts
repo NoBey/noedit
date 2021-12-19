@@ -1,5 +1,5 @@
 import {marked} from "marked";
-import test from './test.md'
+import test from './test1.md'
 // @ts-ignore
 window.marked =marked
 

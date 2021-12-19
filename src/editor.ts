@@ -9,9 +9,57 @@ import {
   BlockquoteInputEvent,
   InputEventStrategy,
   ListInputEvent,
-  CodeInputEvent
+  CodeInputEvent,
+  TableInputEvent
 } from "./inputEvent";
 import { History } from "./history";
+
+function ConvertBlock(block: BlockInterface){
+  const { model } = editor;
+
+  // heading
+  if (/^(#+)\s(.*)/.test(block.text)) {
+    const newBlock = Block.createHeading(block.text)
+    selection.focusOffset -= newBlock.depth;
+    model.replaceBlock(block, newBlock);
+    selection.collapse(newBlock);
+  }
+
+  // ul
+  if (/^[\\s]*[-\\*\\+] +(.*)/.test(block.text)) {
+    const newBlock = Block.createListBlock(block);
+    // block.text = block.text.replace("- ", "");
+    selection.focusOffset -= 2;
+    model.updateBlock(block, { text: block.text.replace("- ", "") });
+    model.replaceBlock(block, newBlock);
+    selection.collapse(newBlock);
+  }
+  // quote
+  if (block.text.startsWith("> ")) {
+    const newBlock = Block.createBlockquoteBlock(block);
+    selection.focusOffset -= 2;
+    model.updateBlock(block, { text: block.text.replace("> ", "") });
+    model.replaceBlock(block, newBlock);
+    selection.collapse(newBlock);
+  }
+
+  // hr
+  if (block.text.startsWith("---")) {
+    selection.collapse(Block.getNextTextBlock(block.id));
+    model.replaceBlock(block, Block.createHrBlock());
+  }
+
+  // task 
+  if(/^\[[\s,x]\]/.test(block.text)){
+    if(block.parent.type === "list_item" && block.parent.blocks.indexOf(block) === 0){
+      selection.focusOffset -= 2;
+      model.updateBlock(block.parent, { task: true, checked: block.text.startsWith('[x]')  });
+      model.updateBlock(block, { text: block.text.replace(/^\[[\s,x]\]/, "") });
+    }
+  }
+}
+
+
 
 export class Editor {
   model: Model;
@@ -27,35 +75,13 @@ export class Editor {
     this.inputStrategys.push(new BlockquoteInputEvent());
     this.inputStrategys.push(new ListInputEvent());
     this.inputStrategys.push(new CodeInputEvent());
+    this.inputStrategys.push(new TableInputEvent());
 
     Event.on("block-change", this.blockChange.bind(this));
   }
 
   blockChange(block: BlockInterface) {
-    console.log("blockChange", block.type, block);
-    const { model } = this;
-    if (block.text.startsWith("- ")) {
-      const newBlock = Block.createListBlock(block);
-      // block.text = block.text.replace("- ", "");
-      selection.focusOffset -= 2;
-      model.updateBlock(block, { text: block.text.replace("- ", "") });
-      model.replaceBlock(block, newBlock);
-
-      selection.collapse(newBlock);
-    }
-    if (block.text.startsWith("> ")) {
-      const newBlock = Block.createBlockquoteBlock(block);
-      // block.text = block.text.replace("> ", "");
-      selection.focusOffset -= 2;
-      model.updateBlock(block, { text: block.text.replace("> ", "") });
-      model.replaceBlock(block, newBlock);
-
-      selection.collapse(newBlock);
-    }
-    if (block.text.startsWith("---")) {
-      selection.collapse(Block.getNextTextBlock(block.id));
-      model.replaceBlock(block, Block.createHrBlock());
-    }
+    ConvertBlock(block)
   }
   applyInputStrategys(inputType: string, Event: InputEvent) {
     const strategys = [...this.inputStrategys];

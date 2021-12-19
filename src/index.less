@@ -16,8 +16,10 @@
 }
 
 .md-hr {
-  -moz-user-modify: read-only;
-  -webkit-user-modify: read-only;
+  -webkit-user-modify: read-write-plaintext-only;
+  &:focus{
+    outline: blue auto 5px;
+  }
 }
 
 
@@ -118,6 +120,7 @@ table {
 table,
 th,
 td {
+  min-width: 20px;
   border: 1px solid #d0d0d0;
 }
 
@@ -171,3 +174,6 @@ td {
 // .code-tooltip[contenteditable]:read-only {
 //   cursor: not-allowed;
 // }
+
+
+// https://theme.typora.io/theme/Lark/

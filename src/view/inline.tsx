@@ -53,6 +53,5 @@ function genHtml(text) {
 
 export const InlineText = ({ text, id }) => {
   path.push(id);
-  if (!text) return <br />;
-  return <span dangerouslySetInnerHTML={{ __html: genHtml(text) }}></span>;
+  return <span dangerouslySetInnerHTML={{ __html: text ? genHtml(text) : "<br />" }}></span>;
 };

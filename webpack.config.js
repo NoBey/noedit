@@ -6,7 +6,7 @@ const ASSET_PATH = process.env.ASSET_PATH || '/';
 const output = process.env.output || 'dist';
 module.exports = {
   entry: APP_PATH,
-  // devtool: 'source-map',
+  devtool: 'source-map',
   output: {
     publicPath: ASSET_PATH,
     filename: 'bundle.js',
@@ -72,7 +72,7 @@ module.exports = {
     ]
   },
 
-  plugins: [new HtmlWebpackPlugin({ inject: true }), new ForkTsCheckerWebpackPlugin()],
+  plugins: [new HtmlWebpackPlugin({ inject: true, title:"noedit - By NoBey" }), new ForkTsCheckerWebpackPlugin()],
 
   performance: {
     hints: false

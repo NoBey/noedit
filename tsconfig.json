@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "rootDir": "src",
+    // "rootDir": "src",
     "baseUrl": ".",
     "outDir": "dist",
     "declaration": true,
@@ -21,7 +21,7 @@
     "noUnusedLocals": false,
     "noImplicitAny": false,
     "strict": false,
-    "plugins": [{ "name": "typescript-plugin-css-modules" }]
+    "plugins": [{ "name": "typescript-plugin-css-modules" }],
   },
   "include": ["src/**/*.d.ts"],
   "exclude": ["node_modules", "dist", "typings", "**/__test__", "test", "docs", "tests", "**/*.bak.ts"]

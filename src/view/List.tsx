@@ -16,7 +16,7 @@ function CheckBox({ value, onChange = (v) => {} }) {
 export const ListItem = forwardRef(
   ({ blocks, task = false, checked }: any, ref: LegacyRef<HTMLLIElement>) => {
     return (
-      <li ref={ref} className={task && "md-list-task-item"}>
+      <li ref={ref} className={task ? "md-list-task-item" : ""}>
         {task && <CheckBox value={checked} onChange={(v) => console.log(v)} />}
         <BlockList blocks={blocks} />
       </li>
@@ -25,11 +25,12 @@ export const ListItem = forwardRef(
 );
 
 export const List = forwardRef(
-  ({ blocks }: any, ref: LegacyRef<HTMLUListElement>) => {
+  ({ blocks, ordered }: any, ref: any) => {
+    const Cpm = ordered ? 'ol' : 'ul'
     return (
-      <ul ref={ref}>
+      <Cpm ref={ref}>
         <BlockList blocks={blocks} />
-      </ul>
+      </Cpm>
     );
   }
 );
