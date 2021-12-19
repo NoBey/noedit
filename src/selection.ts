@@ -55,11 +55,25 @@ export interface SelectionInterface extends Selection{}
       node = node.parentElement
     }
   }
+  focusCode({focusNode}){
+   const block =  Block.domToBlock(focusNode)
+   Array.from(document.querySelectorAll('.md-code-focus')).forEach(dom => {
+    dom.classList.remove('md-code-focus')
+  });
+  if( block.type === 'code'){
+    console.log('code')
+     Block.getDomByid(block.id)?.classList.add('md-code-focus')
+  }
+    
+  }
   change() {
     const { selection } = this;
     // console.log('change', selection)
 
-    if(selection.type === 'Caret') this.focusInline(selection)
+    if(selection.type === 'Caret') {
+      this.focusInline(selection)
+      this.focusCode(selection)
+    }
 
     const anchor = Block.fixOffset(selection.anchorNode, selection.anchorOffset)
     const focus = Block.fixOffset(selection.focusNode, selection.focusOffset)

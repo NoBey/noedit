@@ -13,6 +13,7 @@
     "less-loader": "^10.2.0",
     "marked": "^4.0.6",
     "prismjs": "^1.25.0",
+    "raw-loader": "^4.0.2",
     "react": "17.x",
     "react-dom": "17.x",
     "react-is": "^17.0.2",
@@ -48,6 +49,7 @@
     "type-check": "tsc --noEmit",
     "type-check:watch": "npm run type-check -- --watch",
     "build": "webpack --progress --mode=production",
+    "build-test": "output=test ASSET_PATH=/noedit/ webpack --progress --mode=production",
     "start": "webpack s --config ./webpack.config.js --mode=development",
     "start:prod": "npm run build && http-server dist -p 9999 -o"
   },

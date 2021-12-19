@@ -4,23 +4,36 @@
 }
 #root {
   outline: none;
-  width: 400px;
+  margin: 0 20%;
   height: auto;
-  border: 1px solid #ccc;
+  // border: 1px solid #ccc;
   word-break: break-all;
   padding: 10px;
   white-space: pre-wrap;
-  margin: 20px;
-  height: 600px;
-  overflow: scroll;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
 }
 
 .md-hr {
   -moz-user-modify: read-only;
   -webkit-user-modify: read-only;
 }
-a{
-  color:#4183C4;
+
+
+.md-list-task-item{
+  list-style-type: none; 
+
+  input[type="checkbox"]{
+    position: absolute;
+    top:3px;
+    left: -25px;
+  }
+ 
+}
+
+a {
+  color: #4183c4;
 }
 .md-hr hr {
   height: 2px;
@@ -32,19 +45,41 @@ a{
   box-sizing: content-box;
 }
 
-.inline{
-  &-meta, &-before, &-after{
+.inline {
+  &-meta,
+  &-before,
+  &-after {
     display: none;
     color: #aaa;
   }
-}
 
-.inline-focus{
-  .inline-meta, .inline-before, .inline-after{
+  img{
+    display: block;
+  }
+
+  codespan{
     display: inline;
+    color: rgb(119, 119, 119);
+    background: rgb(243, 244, 244);
+    padding: 0 2px 0 2px;
+    border: 1px solid #e7eaed;
+    border-radius: 3px;
+    font-size: 15px;
+    font-family: "Lucida Console", Consolas, Courier, monospac;
   }
 }
 
+.inline-focus {
+  .inline-meta,
+  .inline-before,
+  .inline-after {
+    display: inline;
+  }
+  
+}
+li{
+  position: relative;
+}
 
 body {
   font-family: "Open Sans", "Clear Sans", "Helvetica Neue", Helvetica, Arial,
@@ -77,7 +112,8 @@ blockquote blockquote {
 
 table {
   border-collapse: collapse;
-  min-width: 300px;
+  width: 100%;
+  margin: 10px 0;
 }
 table,
 th,
@@ -85,19 +121,53 @@ td {
   border: 1px solid #d0d0d0;
 }
 
-code {
-  width: 100%;
-  display: block;
-  padding: 8px;
-  border: 1px solid #d0d0d0;
-  background: #f3f3f3;
-  border-radius: 3px;
-  box-sizing: border-box;
-  min-height: 38px;
-}
+
 .md-code {
   position: relative;
   width: 100%;
+
+  code {
+    width: 100%;
+    display: block;
+    padding: 8px;
+    border: 1px solid #d0d0d0;
+    background: #f3f3f3;
+    border-radius: 3px;
+    box-sizing: border-box;
+    min-height: 38px;
+  }
 }
 
+.md-code-focus{
+  .code-tooltip{
+    display: block;
+  }
+}
 
+.code-tooltip {
+  display: none;
+  cursor: pointer;
+  width: 180px;
+  height: 30px;
+  position: absolute;
+  text-align: center;
+  font-size: 14px;
+  line-height: 30px;
+  background: #f3f3f3;
+  bottom: -32px;
+  right: 0;
+  box-shadow: 0 1px 1px 0 rgb(0 28 36 / 20%);
+
+  input{
+    width: 100%;
+    text-align: center;
+    border: 0;
+    background: transparent;
+    width: calc(100% - 20px);
+    margin: 0 10px;
+    outline: none;
+  }
+}
+// .code-tooltip[contenteditable]:read-only {
+//   cursor: not-allowed;
+// }

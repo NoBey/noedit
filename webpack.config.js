@@ -2,13 +2,15 @@ const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const path = require('path');
 const APP_PATH = path.resolve(__dirname, 'src', 'index.tsx');
-
+const ASSET_PATH = process.env.ASSET_PATH || '/';
+const output = process.env.output || 'dist';
 module.exports = {
   entry: APP_PATH,
-  devtool: 'source-map',
+  // devtool: 'source-map',
   output: {
+    publicPath: ASSET_PATH,
     filename: 'bundle.js',
-    path: path.resolve(__dirname, 'dist')
+    path: path.resolve(__dirname, output)
   },
 
   resolve: {
@@ -22,6 +24,10 @@ module.exports = {
   module: {
     rules: [
       { test: /\.(ts|js)x?$/, loader: 'babel-loader', exclude: /node_modules/ },
+      {
+        test: [/\.txt$/i, /\.md$/i],
+        use: 'raw-loader',
+      },
       {
         test: [/\.module.css$/, /\.module.less$/],
         use: [

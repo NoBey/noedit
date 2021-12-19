@@ -1,7 +1,6 @@
 import React, {
   useLayoutEffect,
   useRef,
-  Fragment,
   forwardRef,
   LegacyRef,
   KeyboardEvent,
@@ -9,134 +8,18 @@ import React, {
 import { editor } from "../editor";
 import { Block as BlockUtil } from "../block";
 // import ReactPrismEditor from "react-prism-editor";
-import Prism from "prismjs";
-import "prismjs/themes/prism.css";
-// @ts-ignore
-window.Prism = Prism
 import { InlineText } from "./inline";
+import { Code } from "./Code";
+import { Hr } from "./Hr";
+import { List, ListItem } from "./List";
+import { Heading } from "./Heading";
+import { Blockquote } from "./Blockquote";
+import { Table } from "./Table";
+import { Paragraph, TextBlock } from "./Paragraph";
 
+export { InlineText };
 export let path = [];
 
-
-export const Blockquote = forwardRef(
-  ({ blocks }: any, ref: LegacyRef<HTMLElement>) => {
-    return (
-      <blockquote ref={ref}>
-        <BlockList blocks={blocks} />
-      </blockquote>
-    );
-  }
-);
-
-export const Hr = forwardRef((props, ref: LegacyRef<HTMLDivElement>) => {
-  return (
-    <div ref={ref} className="md-hr">
-      <hr />
-    </div>
-  );
-});
-
-export const Table = forwardRef(
-  (props: any, ref: LegacyRef<HTMLTableElement>) => {
-    return (
-      <table ref={ref} className="md-table">
-        <thead>
-          <tr>
-            {props.header.map((b, i) => (
-              <th key={i}>
-                <Block {...b} />
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {props.rows.map((row, i) => (
-            <tr key={i}>
-              {row.map((b, i) => (
-                <td key={i}>
-                  <Block {...b} />
-                </td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    );
-  }
-);
-
-export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
-  useLayoutEffect(() => {
-    // console.log('Code')
-    // @ts-ignore
-
-  }, []);
-  const html = Prism.highlight(
-    props.text,
-    Prism.languages[props.lang],
-    props.lang
-  );
-  path.push(props.id);
-  return (
-    <div className="md-code" ref={ref}>
-      {/* <code style={{position: 'absolute',top: 0, pointerEvents: 'none', userSelect: 'none' }} dangerouslySetInnerHTML={{ __html: html }} ></code> */}
-      <code dangerouslySetInnerHTML={{ __html: html }}></code>
-    </div>
-  );
-});
-
-
-
-
-export const Heading = forwardRef(({ text, depth, id }: any, ref: any) => {
-  const H = "h" + depth;
-  return (
-    // @ts-ignore
-    <H ref={ref}>
-      <InlineText text={text} id={id} />
-    </H>
-  );
-});
-
-export const List = forwardRef(
-  ({ blocks }: any, ref: LegacyRef<HTMLUListElement>) => {
-    return (
-      <ul ref={ref}>
-        <BlockList blocks={blocks} />
-      </ul>
-    );
-  }
-);
-
-export const ListItem = forwardRef(
-  ({ blocks }: any, ref: LegacyRef<HTMLLIElement>) => {
-    return (
-      <li ref={ref}>
-        <BlockList blocks={blocks} />
-      </li>
-    );
-  }
-);
-
-export const Paragraph = forwardRef(
-  ({ text, id }: any, ref: LegacyRef<HTMLParagraphElement>) => {
-    return (
-      <p ref={ref}>
-        <InlineText text={text} id={id} />
-      </p>
-    );
-  }
-);
-
-export const TextBlock = forwardRef(
-  ({ text, id }: any, ref: LegacyRef<HTMLParagraphElement>) => {
-    return (
-      <p ref={ref}>
-        <InlineText text={text} id={id} />
-      </p>
-    );
-  }
-);
 
 const BlockComponentMap = {
   hr: Hr,
@@ -158,16 +41,6 @@ export const DomToBlock = new WeakMap();
 window.idToDom = idToDom;
 // @ts-ignore
 window.DomToBlock = DomToBlock;
-
-export function BlockList({ blocks = [] }) {
-  return (
-    <>
-      {blocks.map((block) => (
-        <Block key={block.id} {...block} />
-      ))}
-    </>
-  );
-}
 
 export function Root({ blocks, id }) {
   const ref = useRef<HTMLDivElement>();
@@ -228,4 +101,15 @@ export function Block(props) {
     };
   }, [props.id]);
   return <BlockComponent ref={ref} {...props} />;
+}
+
+
+export function BlockList({ blocks = [] }) {
+  return (
+    <>
+      {blocks.map((block) => (
+        <Block key={block.id} {...block} />
+      ))}
+    </>
+  );
 }

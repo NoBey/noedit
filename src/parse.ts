@@ -1,46 +1,13 @@
 import {marked} from "marked";
+import test from './test.md'
 // @ts-ignore
 window.marked =marked
+
+
 let defaultTxt = `
-# dsffs
----
+${test}
+`
 
-| sd | sd |
-|---|---| 
-|ds|sdd|
-
-> 334
-> - 3434dd
- - *Fudge**77*
-
-- dsds
-- sddfs
-
-
-87878
-
-dsfdd
-
-4r45
-
-fgdfg
-
-`;
-
-defaultTxt = defaultTxt 
-+ '```js'
-+ "\nvar a = 1"
-+ "\nconsole.log(a)"
-+ "\n```"
-+ "\n"
-+ "\n"
-
-+ 'sfsdf'
-// + '```js'
-// + "\n//dsdsd"
-// + "\n//sddsd"
-// + "\n```"
-// + "\n1"
 
 function formatBlock(token) {
   if (
