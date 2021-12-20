@@ -10,65 +10,86 @@ import {
   InputEventStrategy,
   ListInputEvent,
   CodeInputEvent,
-  TableInputEvent
+  TableInputEvent,
 } from "./inputEvent";
 import { History } from "./history";
 
-function ConvertBlock(block: BlockInterface){
+function ConvertBlock(block: BlockInterface) {
   const { model } = editor;
+  if (block.type === "heading" || block.type === "paragraph") {
+    // heading
+    if (/^(#+)\s(.*)/.test(block.text)) {
+      const newBlock = Block.createHeading(block.text);
+      selection.focusOffset -= newBlock.depth;
+      model.replaceBlock(block, newBlock);
+      selection.collapse(newBlock);
+    }
 
-  // heading
-  if (/^(#+)\s(.*)/.test(block.text)) {
-    const newBlock = Block.createHeading(block.text)
-    selection.focusOffset -= newBlock.depth;
-    model.replaceBlock(block, newBlock);
-    selection.collapse(newBlock);
-  }
+    if (/^[+]{0,1}(\d+)\.\s/.test(block.text)) {
+      const start = block.text.split(".")[0];
+      const newBlock = Block.createListBlock(block, true, Number(start));
+      // block.text = block.text.replace("- ", "");
+      selection.focusOffset -= start.length + 1;
+      model.updateBlock(block, {
+        text: block.text.replace(/^[+]{0,1}(\d+)\.\s/, ""),
+      });
+      model.replaceBlock(block, newBlock);
+      selection.collapse(newBlock);
+    }
 
-  // ul
-  if (/^[\\s]*[-\\*\\+] +(.*)/.test(block.text)) {
-    const newBlock = Block.createListBlock(block);
-    // block.text = block.text.replace("- ", "");
-    selection.focusOffset -= 2;
-    model.updateBlock(block, { text: block.text.replace("- ", "") });
-    model.replaceBlock(block, newBlock);
-    selection.collapse(newBlock);
-  }
-  // quote
-  if (block.text.startsWith("> ")) {
-    const newBlock = Block.createBlockquoteBlock(block);
-    selection.focusOffset -= 2;
-    model.updateBlock(block, { text: block.text.replace("> ", "") });
-    model.replaceBlock(block, newBlock);
-    selection.collapse(newBlock);
-  }
-
-  // hr
-  if (block.text.startsWith("---")) {
-    selection.collapse(Block.getNextTextBlock(block.id));
-    model.replaceBlock(block, Block.createHrBlock());
-  }
-
-  // task 
-  if(/^\[[\s,x]\]/.test(block.text)){
-    if(block.parent.type === "list_item" && block.parent.blocks.indexOf(block) === 0){
+    // ul
+    if (/^[\\s]*[-\\*\\+] +(.*)/.test(block.text)) {
+      const newBlock = Block.createListBlock(block);
+      // block.text = block.text.replace("- ", "");
       selection.focusOffset -= 2;
-      model.updateBlock(block.parent, { task: true, checked: block.text.startsWith('[x]')  });
-      model.updateBlock(block, { text: block.text.replace(/^\[[\s,x]\]/, "") });
+      model.updateBlock(block, { text: block.text.replace("- ", "") });
+      model.replaceBlock(block, newBlock);
+      selection.collapse(newBlock);
+    }
+    // quote
+    if (block.text.startsWith("> ")) {
+      const newBlock = Block.createBlockquoteBlock(block);
+      selection.focusOffset -= 2;
+      model.updateBlock(block, { text: block.text.replace("> ", "") });
+      model.replaceBlock(block, newBlock);
+      selection.collapse(newBlock);
+    }
+
+    // hr
+    if (block.text.startsWith("---")) {
+      selection.collapse(Block.getNextTextBlock(block.id));
+      model.replaceBlock(block, Block.createHrBlock());
+    }
+
+    // task
+    if (/^\[[\s,x]\]/.test(block.text)) {
+      if (
+        block.parent.type === "list_item" &&
+        block.parent.blocks.indexOf(block) === 0
+      ) {
+        selection.focusOffset -= 2;
+        model.updateBlock(block.parent, {
+          task: true,
+          checked: block.text.startsWith("[x]"),
+        });
+        model.updateBlock(block, {
+          text: block.text.replace(/^\[[\s,x]\]/, ""),
+        });
+      }
     }
   }
 }
 
-
+//
 
 export class Editor {
   model: Model;
   selection: SelectionInterface;
   inputStrategys: InputEventStrategy[] = [];
-  history: History
+  history: History;
   idToBlock = new Map();
   constructor() {
-    this.history = new History(this)
+    this.history = new History(this);
     this.model = createModel(this, parseMD());
     this.selection = selection;
     this.inputStrategys.push(new BaseInputEvent());
@@ -81,7 +102,7 @@ export class Editor {
   }
 
   blockChange(block: BlockInterface) {
-    ConvertBlock(block)
+    ConvertBlock(block);
   }
   applyInputStrategys(inputType: string, Event: InputEvent) {
     const strategys = [...this.inputStrategys];
@@ -93,17 +114,19 @@ export class Editor {
     }
   }
 
+  pasteContnet = [];
   onPaste = (event: ClipboardEvent) => {
-    const { clipboardData  } = event
-    console.log('onPaste', event.clipboardData.types)
-    if(clipboardData.types.includes('text/html')){
-      HtmlToModel(clipboardData.getData('text/html'))
-    }else if (clipboardData.types.includes('text/plain')) {
-      parseMD(clipboardData.getData('text/plain')).blocks
+    const { clipboardData } = event;
+    console.log("onPaste", event.clipboardData.types);
+    if (clipboardData.types.includes("text/html")) {
+      // this.model.deleteContent()
+      this.pasteContnet = HtmlToModel(clipboardData.getData("text/html"));
+      return;
+    } else if (clipboardData.types.includes("text/plain")) {
+      this.pasteContnet = parseMD(clipboardData.getData("text/plain")).blocks;
     }
     // HtmlToModel
-  }
-
+  };
   onBeforeInput = (event: InputEvent) => {
     const { inputType } = event;
     // if(this.selection.focusBlock.type === "code") return
@@ -114,12 +137,29 @@ export class Editor {
     ) {
       return;
     }
-    console.log('onPaste', event.dataTransfer )
-    console.log(inputType, event.getTargetRanges());
+    if (inputType === "insertParagraph") {
+      // insertParagraph 之后
+      const { focusBlock } = editor.selection;
+
+      if (
+        /^\`{3,10}/.test(focusBlock.text) &&
+        focusBlock.type === "paragraph"
+      ) {
+        const newBlock = Block.createCodeBlock(
+          focusBlock.text.replace(/^\`{3,10}/, "")
+        );
+        this.model.replaceBlock(focusBlock, newBlock);
+        this.selection.collapse(newBlock);
+        event.preventDefault();
+
+        return;
+      }
+    }
+    // console.log('onPaste', event.dataTransfer )
     this.applyInputStrategys(inputType, event);
+
     // event.stopPropagation()
     event.preventDefault();
-
     return;
   };
   isComposing = false;

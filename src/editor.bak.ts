@@ -162,7 +162,7 @@ export function createEditor() {
         selection.collapse(newBlock);
         return;
       }
-
+      console.log(focusOffset, event.data)
       selection.collapse(focusBlock, focusOffset + 1);
     },
     insertParagraph(event) {

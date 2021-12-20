@@ -17,6 +17,12 @@ export class BaseInputEvent implements InputEventStrategy {
         editor.model.deleteContent(event.getTargetRanges()[0]);
         editor.model.insertParagraph();
       }
+      if(inputType === "insertFromPaste"){
+        const { pasteContnet } = editor
+        editor.model.deleteContent(event.getTargetRanges()[0]);
+        editor.model.insertBlocks(pasteContnet)
+        editor.pasteContnet = []
+      }
     }
   }
   

@@ -17,9 +17,15 @@ export interface SelectionInterface extends Selection{}
   endContainer?: BlockInterface;
   startOffset?: number
   endOffset?: number
+  skipSelectionchange = false
 
   constructor() {
-    document.addEventListener("selectionchange", this.change.bind(this));
+    // let timer = null
+    // document.addEventListener("selectionchange", () => {
+    //   if(timer) clearTimeout(timer)
+    //   timer = setTimeout(this.change.bind(this), 10)
+    // });
+    document.addEventListener("selectionchange",this.change.bind(this));
   }
 
   collapse(block, offset = 0) {
@@ -28,8 +34,11 @@ export interface SelectionInterface extends Selection{}
     // const dom = Block.getTextByid(block.id);
     // dom && this.selection.collapse(dom, dom.nodeName === "BR" ? 0 : offset);
   }
+ 
   reset() {
-    const { focusBlock, focusOffset } = this;
+    let { focusBlock, focusOffset } = this;
+    if(this.type === "None") return
+    this.skipSelectionchange = true
     const dom = Block.getDomByid(focusBlock.id)
     let offset = focusOffset
     for(let tnode of iterationTextNode(dom)) {
@@ -39,10 +48,11 @@ export interface SelectionInterface extends Selection{}
         offset -= tnode.length
       }
     }
-    this.selection.collapse(Block.getTextByid(focusBlock.id), focusOffset);
+    const text = Block.getTextByid(focusBlock.id)
+    if(text?.nodeName === "#text" && focusOffset > text.length) focusOffset = text.length
+    this.selection.collapse(text, focusOffset);
   }
   focusInline({ focusNode }){
-    
     Array.from(document.querySelectorAll('.inline-focus')).forEach(dom => {
       dom.classList.remove('inline-focus')
     });
@@ -68,7 +78,8 @@ export interface SelectionInterface extends Selection{}
   }
   change() {
     const { selection } = this;
-    // console.log('change', selection)
+   
+    console.log('change', selection)
 
     if(selection.type === 'Caret') {
       this.focusInline(selection)
@@ -77,14 +88,17 @@ export interface SelectionInterface extends Selection{}
 
     const anchor = Block.fixOffset(selection.anchorNode, selection.anchorOffset)
     const focus = Block.fixOffset(selection.focusNode, selection.focusOffset)
-    
+    if(this.skipSelectionchange) {
+      this.skipSelectionchange = false
+      if(this.focusBlock === focus.block) return
+    }
     this.anchorBlock = anchor.block
     this.anchorOffset = anchor.offset
     this.focusBlock = focus.block
     this.focusOffset = focus.offset
 
     this.type = selection.type;
-    // console.log(selection.anchorNode);
+
     this.range = null;
     if (selection.type === "Range") {
       const _range = selection.getRangeAt(0);

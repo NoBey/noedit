@@ -1,5 +1,7 @@
-import React, { forwardRef, LegacyRef } from "react";
+import React, { forwardRef, LegacyRef, useState } from "react";
+import { editor } from "../editor";
 import { BlockList } from "./";
+
 
 function CheckBox({ value, onChange = (v) => {} }) {
   return (
@@ -14,10 +16,15 @@ function CheckBox({ value, onChange = (v) => {} }) {
 
 // task
 export const ListItem = forwardRef(
-  ({ blocks, task = false, checked }: any, ref: LegacyRef<HTMLLIElement>) => {
+  ({ blocks, task = false, checked, id }: any, ref: LegacyRef<HTMLLIElement>) => {
+    
+    const change = (checked) => {
+      if(id) editor.model.updateBlockById(id as string, { checked })
+    }
+
     return (
       <li ref={ref} className={task ? "md-list-task-item" : ""}>
-        {task && <CheckBox value={checked} onChange={(v) => console.log(v)} />}
+        {task && <CheckBox value={checked} onChange={change} />}
         <BlockList blocks={blocks} />
       </li>
     );
@@ -25,10 +32,10 @@ export const ListItem = forwardRef(
 );
 
 export const List = forwardRef(
-  ({ blocks, ordered }: any, ref: any) => {
+  ({ blocks, ordered, start }: any, ref: any) => {
     const Cpm = ordered ? 'ol' : 'ul'
     return (
-      <Cpm ref={ref}>
+      <Cpm ref={ref} start={start}>
         <BlockList blocks={blocks} />
       </Cpm>
     );

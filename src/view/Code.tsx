@@ -17,23 +17,36 @@ function useStopBeforeinput(ref){
     }, [])
 }
 
+function useStopClick(ref){
+  useEffect(() => {
+      const stop = (e) => e.stopPropagation()
+      ref.current.addEventListener('click', stop)
+  }, [])
+}
 
 const Tooltip = (props) => {
-    // const {lang} = props
+    const {lang, id} = props
     const ref = useRef<HTMLDivElement>()
+    const inputRef = useRef<HTMLInputElement>()
     useStopBeforeinput(ref)
+    useStopClick(inputRef)
     const [showMenu, setShowMenu] = useState(false)
-    const [lang, setLang] = useState(props.lang)
+    // const [lang, setLang] = useState(props.lang)
     const onFocus = () => setShowMenu(true)
     const onBlur = () => setShowMenu(false)
-    const opts = Object.keys(Prism.languages).filter(a => a.indexOf(lang) !== -1)
 
-    return <div ref={ref} className="code-tooltip" onBlur={onBlur} onFocus={onFocus} contentEditable={false} >
-        <input value={lang} onChange={v => setLang(v.target.value)}/>
-       {showMenu && opts.length > 0 && <Menu opts={opts} style={{ top: '35px', left: '20px'}} onEnter={(v) => {
-           console.log(v)
-           setLang(v)
-           setShowMenu(false)
+    const opts = Object.keys(Prism.languages)//.filter(a => a.indexOf(lang) !== -1)
+    useEffect(() => {
+      window.addEventListener('click', onBlur)
+      return () =>  window.removeEventListener('click', onBlur)
+    }, [])
+
+    return <div ref={ref} className="code-tooltip"  onFocus={onFocus} contentEditable={false} >
+        <input ref={inputRef} value={lang}  placeholder={'请选择语音'} />
+       {showMenu && opts.length > 0 && <Menu opts={opts} style={{ top: '35px', left: '20px'}} onEnter={(lang) => {
+           console.log({lang})
+           if (id)  editor.model.updateBlockById(id, { lang })
+          //  setShowMenu(false)
        } } />}
     </div>
 }
@@ -52,7 +65,7 @@ export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
     <div className="md-code" ref={ref} >
       {/* <code style={{position: 'absolute',top: 0, pointerEvents: 'none', userSelect: 'none' }} dangerouslySetInnerHTML={{ __html: html }} ></code> */}
       <code dangerouslySetInnerHTML={{ __html: html }}></code>
-      <Tooltip {...props} update={forceUpdate}/>
+      <Tooltip {...props} />
     </div>
   );
 });

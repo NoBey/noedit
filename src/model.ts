@@ -163,11 +163,15 @@ export function createModel(editor, _model: BlockInterface) {
       model.applyOperation(
         createUpdateOperation(selection.focusBlock.id, { text })
       );
+      console.log(focusOffset, data.length, data, text)
       selection.collapse(focusBlock, focusOffset + data.length);
       Event.emit("block-change", focusBlock);
     },
     updateBlock(block: BlockInterface, arg) {
       model.applyOperation(createUpdateOperation(block.id, arg));
+    },
+    updateBlockById(id: string, arg) {
+      model.applyOperation(createUpdateOperation(id, arg));
     },
     insertParagraph(): BlockInterface {
       const { focusBlock, focusOffset } = selection;
@@ -181,6 +185,7 @@ export function createModel(editor, _model: BlockInterface) {
       selection.collapse(newBlock);
       return newBlock;
     },
+
     insertBefore(block: BlockInterface, newBlock: BlockInterface) {
       const blocks = [...block.parent.blocks];
       const index = blocks.indexOf(block);
@@ -188,12 +193,42 @@ export function createModel(editor, _model: BlockInterface) {
       console.log("insertBefore", blocks);
       model.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
     },
+
     insertAfter(block: BlockInterface, newBlock: BlockInterface) {
       const blocks = [...block.parent.blocks];
       const index = blocks.indexOf(block);
       blocks.splice(index + 1, 0, newBlock);
       model.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
     },
+
+    insertAfterBlocks(block: BlockInterface, newBlocks: BlockInterface[]) {
+      const blocks = [...block.parent.blocks];
+      const index = blocks.indexOf(block);
+      blocks.splice(index + 1, 0, ...newBlocks);
+      model.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
+    },
+
+    insertBlocks(blocks: BlockInterface[]){
+      const { focusBlock, focusOffset } = selection
+      if(!blocks.length) return
+      let text = focusBlock.text.slice(0, focusOffset)
+      const last = blocks[blocks.length - 1]
+      const lastOffset = focusBlock.text.length - focusOffset
+      last.text += focusBlock.text.slice(focusOffset)
+      const first = blocks.shift()
+      text += first.text || ''
+      model.applyOperation(createUpdateOperation(focusBlock.id, { text }));
+      if(blocks.length){
+        this.insertAfterBlocks(focusBlock, blocks)
+      }
+      if(blocks.includes(last)){
+        selection.collapse(last, last.text.length - lastOffset)
+      }else{
+        selection.collapse(focusBlock, focusBlock.text.length - lastOffset)
+      }
+
+    },
+
     replaceBlock(block: BlockInterface, newBlock: BlockInterface) {
       const blocks = [...block.parent.blocks];
       const index = blocks.indexOf(block);

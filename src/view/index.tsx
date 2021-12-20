@@ -4,6 +4,7 @@ import React, {
   forwardRef,
   LegacyRef,
   KeyboardEvent,
+  useEffect,
 } from "react";
 import { editor } from "../editor";
 import { Block as BlockUtil } from "../block";
@@ -64,6 +65,11 @@ export function Root({ blocks, id }) {
     };
   }, [id]);
 
+  // useEffect(() => {
+  //   console.log('useEffect',  document.querySelector('h1').innerText)
+
+   
+  // })
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.metaKey && event.key === "z") {
       editor.history.undo();
