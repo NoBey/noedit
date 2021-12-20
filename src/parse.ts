@@ -1,7 +1,20 @@
 import {marked} from "marked";
+import TurndownService from 'turndown'
 import test from './test1.md'
+
+const turndownService =  new TurndownService()
 // @ts-ignore
 window.marked =marked
+// @ts-ignore
+window.turndownService = new TurndownService()
+
+export function parseHtml(html: string): string {
+  return turndownService.turndown(html)
+}
+
+export function HtmlToModel(html){
+  return parseMD((parseHtml(html))).blocks
+}
 
 
 let defaultTxt = `

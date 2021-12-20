@@ -2,7 +2,7 @@ import { selection, SelectionInterface } from "./selection";
 import { createUpdateOperation, createDelOperation } from "./operation";
 import { Block } from "./block";
 import { BlockInterface, createModel, Model } from "./model";
-import { parseMD } from "./parse";
+import { HtmlToModel, parseMD } from "./parse";
 import { Event } from "./Event";
 import {
   BaseInputEvent,
@@ -93,6 +93,17 @@ export class Editor {
     }
   }
 
+  onPaste = (event: ClipboardEvent) => {
+    const { clipboardData  } = event
+    console.log('onPaste', event.clipboardData.types)
+    if(clipboardData.types.includes('text/html')){
+      HtmlToModel(clipboardData.getData('text/html'))
+    }else if (clipboardData.types.includes('text/plain')) {
+      parseMD(clipboardData.getData('text/plain')).blocks
+    }
+    // HtmlToModel
+  }
+
   onBeforeInput = (event: InputEvent) => {
     const { inputType } = event;
     // if(this.selection.focusBlock.type === "code") return
@@ -103,6 +114,7 @@ export class Editor {
     ) {
       return;
     }
+    console.log('onPaste', event.dataTransfer )
     console.log(inputType, event.getTargetRanges());
     this.applyInputStrategys(inputType, event);
     // event.stopPropagation()

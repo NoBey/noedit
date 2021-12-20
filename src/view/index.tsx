@@ -46,6 +46,7 @@ export function Root({ blocks, id }) {
   const ref = useRef<HTMLDivElement>();
   useLayoutEffect(() => {
     ref.current.addEventListener("beforeinput", editor.onBeforeInput);
+    ref.current.addEventListener("paste", editor.onPaste);
     ref.current.addEventListener("compositionstart", editor.onCompositionstart);
     ref.current.addEventListener(
       "compositionupdate",
