@@ -1,5 +1,6 @@
 import React, { forwardRef, LegacyRef } from "react";
 import { InlineText } from ".";
+import { editor } from "../editor";
 
 export const Paragraph = forwardRef(
     ({ text, id }: any, ref: LegacyRef<HTMLParagraphElement>) => {

@@ -2,6 +2,12 @@
   font-family: sans-serif;
   text-align: center;
 }
+html,body{
+  padding: 0;
+margin: 0;
+
+}
+
 #root {
   outline: none;
   margin: 0 20%;
@@ -13,6 +19,7 @@
   overflow-y: scroll;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
+  box-sizing: content-box;
 }
 
 .md-hr {
@@ -76,6 +83,12 @@ a {
   .inline-before,
   .inline-after {
     display: inline;
+  }
+  .katex{
+    display: none;
+  }
+  .katex-error{
+    display: none;
   }
   
 }

@@ -3,18 +3,55 @@ import TurndownService from 'turndown'
 import test from './test1.md'
 import katex from 'katex'
 
+
+const blockMath = {
+  name: 'block-math',
+  level: 'block',                   
+  tokenizer(src, tokens) {
+    const rule = /^(\${2})\s*([\s\S]*?[^\$])\s*\1(?!\$)/;  //
+    const match = rule.exec(src);
+    if (match ) {
+      console.log(match)
+          return {                                      
+          type: 'code',                        
+          // type: 'inline-math',                        
+          raw: match[0],             
+          text: match[2],
+        };
+    //    if(match.index === 0){
+    //     return {                                      
+    //       type: 'inline-math',                        
+    //       raw: match[0],             
+    //       text: match[0].substr(1, match[0].length - 2),
+    //     };
+    //    }
+    //  const list = (this.lexer.inlineTokens(src.slice(0, match.index)))  
+    //  const pre = list[0]
+    //  return pre
+    }
+  },
+  renderer(token) {
+    return `\n<inline-math></inline-math>`;
+  }
+};
+
 const inlineMath = {
   name: 'inline-math',
-  level: 'inline',                                
+  level: 'inline',                   
   tokenizer(src, tokens) {
-    const rule = /^\$[\s\S]*\$/;  //
+    const rule = /\$[\s\S]*\$/;  //
     const match = rule.exec(src);
-    if (match) {
-      return {                                      
-        type: 'inline-math',                        
-        raw: match[0],             
-        text: match[0].substr(1, match[0].length - 2),
-      };
+    if (match ) {
+       if(match.index === 0){
+        return {                                      
+          type: 'inline-math',                        
+          raw: match[0],             
+          text: match[0].substr(1, match[0].length - 2),
+        };
+       }
+     const list = (this.lexer.inlineTokens(src.slice(0, match.index)))  
+     const pre = list[0]
+     return pre
     }
     return false;
   },
@@ -23,7 +60,7 @@ const inlineMath = {
   }
 };
 
-marked.use({ extensions: [inlineMath ] });
+marked.use({ extensions: [inlineMath, blockMath ] });
 // @ts-ignore
 window.katex =katex
 const turndownService =  new TurndownService()

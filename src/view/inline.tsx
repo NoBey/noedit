@@ -2,7 +2,8 @@ import React, { useLayoutEffect } from "react";
 import { editor } from "../editor";
 import { path } from ".";
 import { marked } from "marked";
-
+import katex from 'katex'
+import 'katex/dist/katex.css';
 const lex = new marked.Lexer();
 
 const textType = [ "text"];
@@ -30,10 +31,7 @@ function tokenToHtml(token) {
   if (token.type === "image") {
     return `<span class='inline'>${inline.image(token)}</span>`;
   }
-  if (token.type === "inline-math") {
-    return "inline-math" 
-    // return `<span class='inline'>${}</span>`;
-  }
+
 
   // katex.renderToString('sdds')
   
@@ -42,6 +40,10 @@ function tokenToHtml(token) {
   // if(token.type === 'codespan'){
   //   return  `<span class='inline'>${inline.before(before)}${token.text}${inline.after(after)}</span>`
   // }
+  if (token.type === "inline-math") {
+    return `<span class='inline inline-math'>${inline.before(before)}<span class="inline-meta">${token.text}</span>${katex.renderToString(token.text, { throwOnError: false})}${inline.after(before)}</span>`
+    // return `<span class='inline'>${}</span>`;
+  }
   const content = inline.type(
     token.type,
     token?.tokens?.map(tokenToHtml)?.join("") || token.text

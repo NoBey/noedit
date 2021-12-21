@@ -5,6 +5,11 @@
 
 标签： Cmd-Markdown
 
+
+Allows you to 📝 **write** and 🔖 **structure** content **the way you want to** - whether it be linear, structured, or a collection of linked/connected notes.
+
+1. 2Is ***blazing fast\*** and works both **offline** and **online** - no more 🌀spinners!
+
 ---
 
 ### 1. 斜体和粗体
@@ -131,7 +136,7 @@ $ 表示行内公式：
 
 质能守恒方程可以用一个很简洁的方程式 $E=mc^2$ 来表达。
 
-$$ 表示整行公式：
+表示整行公式：
 
 $$\sum_{i=1}^n a_i=0$$
 

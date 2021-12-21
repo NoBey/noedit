@@ -5,6 +5,7 @@ export function *iterationTextNode(dom: Node): Iterable<Text> {
     const stack = [dom]
     while (stack.length) {
       let node = stack.pop()
+      if((node as HTMLBaseElement)?.classList?.contains?.('katex')) continue
       if(node.nodeName === '#text'){
           yield node as Text
       }
