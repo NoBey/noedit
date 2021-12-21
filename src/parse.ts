@@ -1,7 +1,31 @@
 import {marked} from "marked";
 import TurndownService from 'turndown'
 import test from './test1.md'
+import katex from 'katex'
 
+const inlineMath = {
+  name: 'inline-math',
+  level: 'inline',                                
+  tokenizer(src, tokens) {
+    const rule = /^\$[\s\S]*\$/;  //
+    const match = rule.exec(src);
+    if (match) {
+      return {                                      
+        type: 'inline-math',                        
+        raw: match[0],             
+        text: match[0].substr(1, match[0].length - 2),
+      };
+    }
+    return false;
+  },
+  renderer(token) {
+    return `\n<inline-math></inline-math>`;
+  }
+};
+
+marked.use({ extensions: [inlineMath ] });
+// @ts-ignore
+window.katex =katex
 const turndownService =  new TurndownService()
 // @ts-ignore
 window.marked =marked

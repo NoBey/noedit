@@ -30,6 +30,14 @@ function tokenToHtml(token) {
   if (token.type === "image") {
     return `<span class='inline'>${inline.image(token)}</span>`;
   }
+  if (token.type === "inline-math") {
+    return "inline-math" 
+    // return `<span class='inline'>${}</span>`;
+  }
+
+  // katex.renderToString('sdds')
+  
+
   const [before, after] = token.raw.split(token.text);
   // if(token.type === 'codespan'){
   //   return  `<span class='inline'>${inline.before(before)}${token.text}${inline.after(after)}</span>`
