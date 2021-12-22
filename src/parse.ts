@@ -11,10 +11,10 @@ const blockMath = {
     const rule = /^(\${2})\s*([\s\S]*?[^\$])\s*\1(?!\$)/;  //
     const match = rule.exec(src);
     if (match ) {
-      console.log(match)
           return {                                      
           type: 'code',                        
-          // type: 'inline-math',                        
+          // type: 'inline-math',  
+          lang: "math",                      
           raw: match[0],             
           text: match[2],
         };

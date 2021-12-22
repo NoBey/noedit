@@ -1,8 +1,7 @@
 import { Block } from "./block";
 import { openTooltip } from "./component";
 import { BlockInterface } from "./model";
-import { iterationTextNode } from "./utils";
-import katex from 'katex'
+import { getKatexHtml, iterationTextNode } from "./utils";
 
 export interface SelectionInterface extends Selection {}
 
@@ -62,9 +61,9 @@ class Selection {
     });
 
     let node = focusNode;
-    while (!node?.dataset?.type) {
+    while (node && !node?.dataset?.type) {
       if(node?.classList?.contains('inline-math')){
-        openTooltip(node, katex.renderToString(node.querySelector('.inline-meta').innerText, { throwOnError: false}))
+        openTooltip(node, getKatexHtml(node.querySelector('.inline-meta').innerText))
       }
       if (node?.classList?.contains("inline")) {
         node?.classList.add("inline-focus");

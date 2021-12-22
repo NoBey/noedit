@@ -165,6 +165,15 @@ tr:nth-child(even) {
   .code-tooltip{
     display: block;
   }
+  code{
+    display: block !important;
+  }
+.block-math{
+  border-bottom: 1px solid #ccc;
+  border-left: 1px solid #eee;
+  border-right: 1px solid #eee;
+}
+ 
 }
 
 .code-tooltip {
@@ -177,8 +186,9 @@ tr:nth-child(even) {
   font-size: 14px;
   line-height: 30px;
   background: #f3f3f3;
-  bottom: -32px;
+  bottom: -24px;
   right: 0;
+  z-index: 1;
   box-shadow: 0 1px 1px 0 rgb(0 28 36 / 20%);
 
   input{
@@ -195,5 +205,35 @@ tr:nth-child(even) {
 //   cursor: not-allowed;
 // }
 
+.md-math-block{
+  code{
+    display: none;
+    border-radius: 0;
+    background: rgb(245, 246, 247);
+    border: 0px;
+    padding: 26px 14px;
+    position: relative;
+
+    &:after{
+      content: "$$";
+      position: absolute;
+      bottom: 0px;
+      left: 2px;
+      color: #aaa;
+    }
+    &:before{
+      content: "$$";
+      position: absolute;
+      top: 0px;
+      left: 2px;
+      color: #aaa;
+    }
+  }
+
+  .block-math{
+    text-align: center;
+    padding: 18px 0px;
+  }
+}
 
 // https://theme.typora.io/theme/Lark/

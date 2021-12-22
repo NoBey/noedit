@@ -1,4 +1,4 @@
-
+import katex from 'katex'
 
 export function *iterationTextNode(dom: Node): Iterable<Text> {
     if(!dom) return dom
@@ -11,4 +11,11 @@ export function *iterationTextNode(dom: Node): Iterable<Text> {
       }
       stack.push(...Array.from(node?.childNodes || []).reverse())
     }
+}
+
+export function getKatexHtml(text){
+  return katex.renderToString(
+    text,
+    { throwOnError: false }
+  )
 }
