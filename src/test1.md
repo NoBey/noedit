@@ -96,7 +96,7 @@ Allows you to 📝 **write** and 🔖 **structure** content **the way you want t
 
 示例：
 
-![我的头像](https://www.zybuluo.com/static/img/my_head.jpg)
+![我的头像](https://www.zybuluo.com/static/img/my_head.jpg)  4 44 ![我的头像](https://www.zybuluo.com/static/img/my_head.jpg)
 
 # Cmd Markdown 高阶语法手册
 

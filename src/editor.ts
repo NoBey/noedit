@@ -142,6 +142,19 @@ export class Editor {
       const { focusBlock } = editor.selection;
 
       if (
+        focusBlock.text.trimEnd() === "$$" &&
+        focusBlock.type === "paragraph"
+      ) {
+        const newBlock = Block.createCodeBlock( "math", "");
+        this.model.replaceBlock(focusBlock, newBlock);
+
+        this.selection.collapse(newBlock);
+        event.preventDefault();
+
+        return;
+      }
+
+      if (
         /^\`{3,10}/.test(focusBlock.text) &&
         focusBlock.type === "paragraph"
       ) {
@@ -149,6 +162,7 @@ export class Editor {
           focusBlock.text.replace(/^\`{3,10}/, "")
         );
         this.model.replaceBlock(focusBlock, newBlock);
+
         this.selection.collapse(newBlock);
         event.preventDefault();
 

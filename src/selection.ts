@@ -63,7 +63,8 @@ class Selection {
     let node = focusNode;
     while (node && !node?.dataset?.type) {
       if(node?.classList?.contains('inline-math')){
-        openTooltip(node, getKatexHtml(node.querySelector('.inline-meta').innerText))
+        const text = node.querySelector('.inline-meta').innerText
+        text && openTooltip(node, getKatexHtml(text))
       }
       if (node?.classList?.contains("inline")) {
         node?.classList.add("inline-focus");

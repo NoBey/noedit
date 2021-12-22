@@ -10,19 +10,23 @@ export function Tooltip({ top = 0, left = 0, html }){
 
 
 export function openTooltip(dom: HTMLDivElement, html){
+    if(!html) return
     const div = document.createElement('div')
     document.body.appendChild(div)
     const { offsetTop: y, offsetLeft: x, offsetHeight: h, offsetWidth: w } = dom 
     // const {x, y, height, width} = dom.getBoundingClientRect()
-    window.addEventListener('click', e => {
-       let target = e.target as Element
-       while(target){
-           if(target === dom) return
-           target = target.parentElement
-       }
-       unmountComponentAtNode(div)
-       div.remove()
-    })
+
+    function close(e){
+            let target = e.target as Element
+            while(target){
+                if(target === dom) return
+                target = target.parentElement
+            }
+            unmountComponentAtNode(div)
+            div.remove()
+            window.removeEventListener('click', close)
+    }
+    window.addEventListener('click', close)
 
     
     render(<Tooltip top={y + h} left={x + w/2} html={html} />, div)
