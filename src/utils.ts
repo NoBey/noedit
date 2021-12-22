@@ -1,4 +1,5 @@
 import katex from 'katex'
+import "katex/dist/katex.css";
 
 export function *iterationTextNode(dom: Node): Iterable<Text> {
     if(!dom) return dom

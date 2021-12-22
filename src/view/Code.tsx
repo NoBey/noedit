@@ -4,6 +4,11 @@ import { path } from ".";
 import { editor } from '../editor'
 Prism.highlightAll();
 import "prismjs/components/prism-latex";
+import "prismjs/components/prism-python";
+import "prismjs/components/prism-java";
+import "prismjs/components/prism-typescript";
+import "prismjs/components/prism-bash";
+import "prismjs/components/prism-json";
 
 // @ts-ignore
 window.Prism = Prism;
@@ -60,11 +65,10 @@ const Tooltip = (props) => {
 
 export const MathCode = ({ text }) => {
   const html = Prism.highlight(
-    text,
+    text || '\n',
     Prism.languages.latex,
     'latex'
   );
-
   return <>
   {/* <code style={{position: 'absolute',top: 0, pointerEvents: 'none', userSelect: 'none' }} dangerouslySetInnerHTML={{ __html: html }} ></code> */}
   <code dangerouslySetInnerHTML={{ __html: html }}></code>

@@ -2,8 +2,7 @@ import React, { useLayoutEffect } from "react";
 import { editor } from "../editor";
 import { path } from ".";
 import { marked } from "marked";
-import katex from "katex";
-import "katex/dist/katex.css";
+
 import { getKatexHtml } from "../utils";
 const lex = new marked.Lexer();
 
