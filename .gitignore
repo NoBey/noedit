@@ -5,3 +5,4 @@ yarn-error.log
 *.tsi
 *.tss
 *.tso
+package-lock.json

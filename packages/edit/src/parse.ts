@@ -1,6 +1,6 @@
 import { marked } from "marked";
 import TurndownService from "turndown";
-import test from "./test2.md";
+import test from "./test1.md";
 import katex from "katex";
 
 const blockMath = {
@@ -55,6 +55,7 @@ const inlineMath = {
           text: match[1],
         };
       }
+      // @ts-ignore
       const list = this.lexer.inlineTokens(src.slice(0, match.index));
       const pre = list[0];
       return pre;

@@ -1,0 +1,70 @@
+{
+  "name": "@noedit/example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dev.js",
+  "dependencies": {
+    "@noedit/core": "1.0.0",
+    "@types/marked": "^4.0.1",
+    "babel-plugin-import": "^1.13.3",
+    "css-loader": "^6.5.1",
+    "eventemitter3": "^4.0.7",
+    "flowchart.js": "^1.17.0",
+    "hotkeys-js": "^3.8.7",
+    "katex": "^0.15.1",
+    "less": "^4.1.2",
+    "less-loader": "^10.2.0",
+    "marked": "^4.0.6",
+    "mermaid": "^8.13.6",
+    "prismjs": "^1.25.0",
+    "raw-loader": "^4.0.2",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "react-is": "^17.0.2",
+    "regenerator-runtime": "^0.13.9",
+    "turndown": "^7.1.1"
+  },
+  "devDependencies": {
+    "@babel/core": "7.15.8",
+    "@babel/plugin-proposal-class-properties": "7.14.5",
+    "@babel/plugin-proposal-object-rest-spread": "7.15.6",
+    "@babel/plugin-transform-for-of": "^7.16.5",
+    "@babel/preset-env": "7.15.8",
+    "@babel/preset-react": "7.14.5",
+    "@babel/preset-typescript": "7.15.0",
+    "@types/react": "^16.9.0",
+    "@types/react-dom": "^16.9.0",
+    "babel-loader": "8.2.3",
+    "css-loader": "^6.5.1",
+    "fork-ts-checker-webpack-plugin": "6.4.0",
+    "html-webpack-plugin": "5.5.0",
+    "http-server": "14.0.0",
+    "less": "^4.1.2",
+    "less-loader": "^10.2.0",
+    "lint-staged": "^10.0.7",
+    "prettier": "^2.2.0",
+    "style-loader": "^3.3.1",
+    "typescript": "^4.1.2",
+    "webpack": "5.60.0",
+    "webpack-cli": "4.9.1",
+    "webpack-dev-server": "4.4.0"
+  },
+  "scripts": {
+    "type-check": "tsc --noEmit",
+    "type-check:watch": "npm run type-check -- --watch",
+    "build": "webpack --progress --mode=production",
+    "build-test": "output=test ASSET_PATH=/noedit/test/ webpack --progress --mode=production",
+    "start": "webpack s --config ./webpack.config.js --mode=development",
+    "start:prod": "npm run build && http-server dist -p 9999 -o"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/NoBey/noedit.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/NoBey/noedit/issues"
+  },
+  "homepage": "https://github.com/NoBey/noedit#readme"
+}

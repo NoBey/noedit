@@ -1,0 +1,18 @@
+{
+  "presets": ["@babel/env", "@babel/typescript", "@babel/react"],
+  "plugins": [
+    [
+      "import",
+      {
+        "libraryName": "@psp/antd",
+        "style": true
+      }
+    ],
+    "@babel/proposal-class-properties",
+    "@babel/proposal-object-rest-spread",
+    ["@babel/plugin-transform-for-of", {
+      // "loose": true, // defaults to false
+      // "assumeArray": true // defaults to false
+    }]
+  ]
+}

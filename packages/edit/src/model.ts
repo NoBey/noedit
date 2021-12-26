@@ -16,6 +16,8 @@ export interface BlockInterface {
   header?: BlockInterface[];
   rows?: BlockInterface[][];
   depth?: number;
+  task?: boolean;
+  checked?: boolean;
 }
 
 let index = 0;
