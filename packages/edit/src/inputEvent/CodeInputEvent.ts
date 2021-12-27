@@ -1,8 +1,13 @@
-import { editor } from "src/editor";
 import { InputEventStrategy } from ".";
+import { EditorInterface } from "../editor";
 
 export class CodeInputEvent implements InputEventStrategy {
+  editor: EditorInterface
+  constructor(editor: EditorInterface) {
+    this.editor = editor
+  }
     accept(inputType: string, event?: InputEvent) {
+      const { editor } = this
       if(inputType==="insertParagraph" && editor.selection.focusBlock.type === "code"){
         return true
       }
@@ -12,6 +17,8 @@ export class CodeInputEvent implements InputEventStrategy {
       return false;
     }
     execute(inputType: string, event?: InputEvent): void {
+      const { editor } = this
+
       if (inputType === "insertParagraph") {
         editor.model.deleteContent(event.getTargetRanges()[0]);
         editor.model.insertText('\n');

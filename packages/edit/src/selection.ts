@@ -1,11 +1,11 @@
-import { Block } from "./block";
+import { BlockUtil } from "./block";
 import { openTooltip } from "./component";
 import { BlockInterface } from "./model";
 import { getKatexHtml, iterationTextNode } from "./utils";
 
 export interface SelectionInterface extends Selection {}
 
-class Selection {
+export class Selection {
   selection = window.getSelection();
   anchorBlock?: BlockInterface;
   anchorOffset?: number;
@@ -21,11 +21,6 @@ class Selection {
   skipSelectionchange = false;
 
   constructor() {
-    // let timer = null
-    // document.addEventListener("selectionchange", () => {
-    //   if(timer) clearTimeout(timer)
-    //   timer = setTimeout(this.change.bind(this), 10)
-    // });
     document.addEventListener("selectionchange", this.change.bind(this));
   }
 
@@ -40,7 +35,7 @@ class Selection {
     let { focusBlock, focusOffset } = this;
     if (this.type === "None") return;
     this.skipSelectionchange = true;
-    const dom = Block.getDomByid(focusBlock.id);
+    const dom = BlockUtil.getDomByid(focusBlock.id);
     let offset = focusOffset;
     for (let tnode of iterationTextNode(dom)) {
 
@@ -50,7 +45,7 @@ class Selection {
         offset -= tnode.length;
       }
     }
-    const text = Block.getTextByid(focusBlock.id);
+    const text = BlockUtil.getTextByid(focusBlock.id);
     if (text?.nodeName === "#text" && focusOffset > text.length)
       focusOffset = text.length;
     this.selection.collapse(text, focusOffset);
@@ -73,13 +68,13 @@ class Selection {
     }
   }
   focusCode({ focusNode }) {
-    const block = Block.domToBlock(focusNode);
+    const block = BlockUtil.domToBlock(focusNode);
     Array.from(document.querySelectorAll(".md-code-focus")).forEach((dom) => {
       dom.classList.remove("md-code-focus");
     });
     if (block.type === "code") {
       console.log("code");
-      Block.getDomByid(block.id)?.classList.add("md-code-focus");
+      BlockUtil.getDomByid(block.id)?.classList.add("md-code-focus");
     }
   }
 
@@ -93,11 +88,11 @@ class Selection {
       this.focusCode(selection);
     }
 
-    const anchor = Block.fixOffset(
+    const anchor = BlockUtil.fixOffset(
       selection.anchorNode,
       selection.anchorOffset
     );
-    const focus = Block.fixOffset(selection.focusNode, selection.focusOffset);
+    const focus = BlockUtil.fixOffset(selection.focusNode, selection.focusOffset);
     if (this.skipSelectionchange) {
       this.skipSelectionchange = false;
       if (this.focusBlock === focus.block) return;
@@ -113,13 +108,13 @@ class Selection {
     if (selection.type === "Range") {
       const _range = selection.getRangeAt(0);
       const { startContainer, startOffset, endContainer, endOffset } =
-        Block.range(_range);
+      BlockUtil.range(_range);
       this.range = _range;
       this.startOffset = startOffset;
       this.endOffset = endOffset;
       this.startContainer = startContainer;
       this.endContainer = endContainer;
-      this.commonAncestor = Block.domToBlock(_range.commonAncestorContainer);
+      this.commonAncestor = BlockUtil.domToBlock(_range.commonAncestorContainer);
     }
     // if(this.focusBlock.type === "code"){
     //   document.querySelector('#root').setAttribute('contentEditable', 'false')
@@ -131,6 +126,6 @@ class Selection {
   // setRange() {}
 }
 
-export const selection = new Selection();
+// export const selection = new Selection();
 // @ts-ignore
 // window.selection = selection;

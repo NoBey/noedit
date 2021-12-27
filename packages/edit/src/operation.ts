@@ -1,4 +1,4 @@
-import { Block } from "./block";
+import { BlockUtil } from "./block";
 import { editor } from "./editor";
 // insert_node merge_node move_node remove_node split_node set_node
 
@@ -20,7 +20,7 @@ function stopOperations(){
 export function createUpdateOperation(id, arg) {
   const _arg = {}
   const keys = Object.keys(arg)
-  const block = Block.getBlockByid(id)
+  const block = BlockUtil.getBlockByid(id)
   keys.forEach(k => _arg[k] = block[k])
 
   const invert = () => {
@@ -30,7 +30,7 @@ export function createUpdateOperation(id, arg) {
 }
 
 export function createDelOperation(id) {
-  const block = Block.getBlockByid(id)
+  const block = BlockUtil.getBlockByid(id)
   const arg = { id: block.parent.id, blocks: [...block.parent.blocks] }
 
   const invert = () => {

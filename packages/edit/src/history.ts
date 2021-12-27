@@ -1,7 +1,8 @@
 // import hotkeys from "hotkeys-js"
 
-import { editor, Editor } from "./editor";
+import { Editor } from "./editor";
 import { BlockInterface } from "./model";
+
 export interface Record {
   ops: any[];
   focusBlock: BlockInterface;
@@ -16,15 +17,12 @@ export class History {
   editor: Editor;
   constructor(editor) {
     this.editor = editor;
-    // hotkeys('ctrl+z, command+z', () => {
-    //   console.log('undo')
-    //   return false;
-    // });
   }
   add(record: Record) {
     this.undoStack.push(record);
   }
   undo() {
+    const { editor } = this
     console.log("undo");
     if (this.undoStack.length === 0) return;
     const record = this.undoStack.pop();

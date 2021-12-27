@@ -1,11 +1,13 @@
-import { Block } from "./block";
+import { type } from "os";
+import { BlockUtil } from "./block";
 import { Event } from "./Event";
 import {
   createDelOperation,
   createUpdateOperation,
   startOperations,
 } from "./operation";
-import { selection } from "./selection";
+// import { selection } from "./selection";
+import { EditorInterface } from "./editor";
 
 export interface BlockInterface {
   id?: number | string;
@@ -22,19 +24,26 @@ export interface BlockInterface {
 
 let index = 0;
 
-export interface Model extends ReturnType<typeof createModel> {}
+// export type ModelInterface = typeof Model
+export interface ModelInterface extends Model { }
 
-export function createModel(editor, _model: BlockInterface) {
-  let timer;
+export class Model {
+  editor: EditorInterface
+  _model: BlockInterface
+  constructor(editor, _model: BlockInterface) {
+    this.editor = editor
+    this._model = this.normalize(_model)
+  }
+  normalize(block: BlockInterface, parent?: BlockInterface) {
+    const { editor, normalize } = this
 
-  const normalize = (block: BlockInterface, parent?: BlockInterface) => {
     block.parent = parent;
     if (!block.id) block.id = ++index;
     editor.idToBlock.set(block.id, block);
     block?.blocks?.forEach((b) => normalize(b, block));
     if (["list_item", "blockquote", "list"].includes(block.type)) {
       if (block.blocks.length === 0) {
-        model.deleteBlock(block.id);
+        this.deleteBlock(block.id);
       }
     }
     if (block.type === "table") {
@@ -51,197 +60,205 @@ export function createModel(editor, _model: BlockInterface) {
       );
     }
     return block;
-  };
+  }
 
-  const model = {
-    editor,
-    _model: normalize(_model),
-    normalize,
-    onChange(cb) {
-      Event.on("model-change", cb, editor);
-    },
-    applyModelChange() {
-      if (timer) clearTimeout(timer);
-      timer = setTimeout(() => {
-        model.normalize(model._model);
-        Event.emit("model-change", editor.model);
-        selection.reset();
-      }, 0);
-    },
-    deleteBlock(id) {
-      model.applyOperation(createDelOperation(id));
-    },
-    applyOperation(operation) {
-      const { type, arg } = operation;
-      if (type === "update") {
-        const block = Block.getBlockByid(arg.id);
-        const keys = Object.keys(arg);
-        keys.forEach((k) => {
-          block[k] = arg[k];
-        });
-      }
-      if (type === "delete") {
-        const block = Block.getBlockByid(arg.id);
-        block.parent.blocks = block.parent.blocks.filter(
-          ({ id }) => id !== arg.id
-        );
-      }
+  onChange(cb) {
+    Event.on("model-change", cb, this.editor);
+  }
 
-      model.applyModelChange();
-    },
-    deleteContent(range) {
-      const { startContainer, endContainer, startOffset, endOffset } =
-        Block.range(range);
+  timer = null
+  applyModelChange() {
+    const { editor } = this
+    const { selection } = editor
+    if (this.timer) clearTimeout(this.timer);
+    this.timer = setTimeout(() => {
+      this.normalize(this._model);
+      Event.emit("model-change", editor.model);
+      selection.reset();
+    }, 0);
+  }
 
-      if (startContainer === endContainer) {
-        if (startOffset === endOffset) return;
-        let text = startContainer.text;
-        if (startOffset + 1 === endOffset) {
-          if (
-            ["`", "*", "_", "'", '"'].includes(text[startOffset]) &&
-            text[startOffset] === text[endOffset]
-          ) {
-            text = text.slice(0, startOffset) + text.slice(endOffset + 1);
-          } else if (
-            ["{", "[", "("].includes(text[startOffset]) &&
-            text[endOffset] ===
-              { "{": "}", "[": "]", "(": ")" }[text[startOffset]]
-          ) {
-            text = text.slice(0, startOffset) + text.slice(endOffset + 1);
-          } else {
-            text = text.slice(0, startOffset) + text.slice(endOffset);
-          }
+  applyOperation(operation) {
+    const { type, arg } = operation;
+    if (type === "update") {
+      const block = BlockUtil.getBlockByid(arg.id);
+      const keys = Object.keys(arg);
+      keys.forEach((k) => {
+        block[k] = arg[k];
+      });
+    }
+    if (type === "delete") {
+      const block = BlockUtil.getBlockByid(arg.id);
+      block.parent.blocks = block.parent.blocks.filter(
+        ({ id }) => id !== arg.id
+      );
+    }
+
+    this.applyModelChange();
+  }
+
+  deleteBlock(id) {
+    this.applyOperation(createDelOperation(id));
+  }
+
+  deleteContent(range) {
+    const { selection } = this.editor
+    const { startContainer, endContainer, startOffset, endOffset } =
+      BlockUtil.range(range);
+
+    if (startContainer === endContainer) {
+      if (startOffset === endOffset) return;
+      let text = startContainer.text;
+      if (startOffset + 1 === endOffset) {
+        if (
+          ["`", "*", "_", "'", '"'].includes(text[startOffset]) &&
+          text[startOffset] === text[endOffset]
+        ) {
+          text = text.slice(0, startOffset) + text.slice(endOffset + 1);
+        } else if (
+          ["{", "[", "("].includes(text[startOffset]) &&
+          text[endOffset] ===
+          { "{": "}", "[": "]", "(": ")" }[text[startOffset]]
+        ) {
+          text = text.slice(0, startOffset) + text.slice(endOffset + 1);
         } else {
           text = text.slice(0, startOffset) + text.slice(endOffset);
         }
-        model.applyOperation(
-          createUpdateOperation(startContainer.id, { text })
-        );
       } else {
-        let text = startContainer.text.slice(0, startOffset);
-        text += (endContainer?.text||'').slice(endOffset);
-        model.updateBlock(startContainer, { text });
+        text = text.slice(0, startOffset) + text.slice(endOffset);
+      }
+      this.applyOperation(
+        createUpdateOperation(startContainer.id, { text })
+      );
+    } else {
+      let text = startContainer.text.slice(0, startOffset);
+      text += (endContainer?.text || '').slice(endOffset);
+      this.updateBlock(startContainer, { text });
 
-        const stack = [Block.getCommonBlock(startContainer, endContainer)];
-        let flag = false;
-        while (stack.length) {
-          const block = stack.pop();
-          [...(block.blocks || [])].reverse().forEach((b) => {
-            stack.push(b);
-          });
-          if (flag && (Block.isTextBlock(block.id) || block.type === "hr" || block.type === "table")) {
-            if(block?.parent?.type === 'table'){
-              model.applyOperation(createUpdateOperation(block.id, { text: "" }));
-            }else{
-              model.applyOperation(createDelOperation(block.id));
-            }
+      const stack = [BlockUtil.getCommonBlock(startContainer, endContainer)];
+      let flag = false;
+      while (stack.length) {
+        const block = stack.pop();
+        [...(block.blocks || [])].reverse().forEach((b) => {
+          stack.push(b);
+        });
+        if (flag && (BlockUtil.isTextBlock(block.id) || block.type === "hr" || block.type === "table")) {
+          if (block?.parent?.type === 'table') {
+            this.applyOperation(createUpdateOperation(block.id, { text: "" }));
+          } else {
+            this.applyOperation(createDelOperation(block.id));
           }
-          if (block === startContainer) flag = true;
-          if (block === endContainer) break;
         }
+        if (block === startContainer) flag = true;
+        if (block === endContainer) break;
       }
+    }
 
-      selection.collapse(startContainer, startOffset);
-    },
-    insertText(data: string) {
-      const { focusOffset, focusBlock } = selection;
-      let text = selection.focusBlock.text || "";
-      text = text.slice(0, focusOffset) + data;
-      if (
-        ["`", "*", "_", "'", '"'].includes(data) &&
-        data !== text[focusOffset - 1]
-      ) {
-        if (selection.focusBlock.text[focusOffset] === data) {
-          text = text.slice(0, text.length - 1);
-        } else {
-          text += data;
-        }
+    selection.collapse(startContainer, startOffset);
+  }
+
+  insertText(data: string) {
+    const { selection } = this.editor
+    const { focusOffset, focusBlock } = selection;
+    let text = selection.focusBlock.text || "";
+    text = text.slice(0, focusOffset) + data;
+    if (
+      ["`", "*", "_", "'", '"'].includes(data) &&
+      data !== text[focusOffset - 1]
+    ) {
+      if (selection.focusBlock.text[focusOffset] === data) {
+        text = text.slice(0, text.length - 1);
+      } else {
+        text += data;
       }
-      if (["{", "[", "("].includes(data)) {
-        text += { "{": "}", "[": "]", "(": ")" }[data];
-      }
-      text += selection.focusBlock.text.slice(focusOffset);
+    }
+    if (["{", "[", "("].includes(data)) {
+      text += { "{": "}", "[": "]", "(": ")" }[data];
+    }
+    text += selection.focusBlock.text.slice(focusOffset);
 
-      model.applyOperation(
-        createUpdateOperation(selection.focusBlock.id, { text })
-      );
-      console.log(focusOffset, data.length, data, text)
-      selection.collapse(focusBlock, focusOffset + data.length);
-      Event.emit("block-change", focusBlock);
-    },
-    updateBlock(block: BlockInterface, arg) {
-      model.applyOperation(createUpdateOperation(block.id, arg));
-    },
-    updateBlockById(id: string, arg) {
-      model.applyOperation(createUpdateOperation(id, arg));
-    },
-    insertParagraph(): BlockInterface {
-      const { focusBlock, focusOffset } = selection;
-      const stext = focusBlock.text.slice(0, focusOffset);
-      const etext = focusBlock.text.slice(focusOffset);
-      const newBlock = Block.createParagraphBlock(etext);
-      model.insertAfter(focusBlock, newBlock);
-      model.applyOperation(
-        createUpdateOperation(selection.focusBlock.id, { text: stext })
-      );
-      selection.collapse(newBlock);
-      return newBlock;
-    },
+    this.applyOperation(
+      createUpdateOperation(selection.focusBlock.id, { text })
+    );
+    console.log(focusOffset, data.length, data, text)
+    selection.collapse(focusBlock, focusOffset + data.length);
+    Event.emit("block-change", focusBlock);
+  }
 
-    insertBefore(block: BlockInterface, newBlock: BlockInterface) {
-      const blocks = [...block.parent.blocks];
-      const index = blocks.indexOf(block);
-      blocks.splice(index, 0, newBlock);
-      console.log("insertBefore", blocks);
-      model.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
-    },
+  updateBlock(block: BlockInterface, arg) {
+    this.applyOperation(createUpdateOperation(block.id, arg));
+  }
 
-    insertAfter(block: BlockInterface, newBlock: BlockInterface) {
-      const blocks = [...block.parent.blocks];
-      const index = blocks.indexOf(block);
-      blocks.splice(index + 1, 0, newBlock);
-      model.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
-    },
+  updateBlockById(id: string, arg) {
+    this.applyOperation(createUpdateOperation(id, arg));
+  }
 
-    insertAfterBlocks(block: BlockInterface, newBlocks: BlockInterface[]) {
-      const blocks = [...block.parent.blocks];
-      const index = blocks.indexOf(block);
-      blocks.splice(index + 1, 0, ...newBlocks);
-      model.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
-    },
+  insertParagraph(): BlockInterface {
+    const { selection } = this.editor
+    const { focusBlock, focusOffset } = selection;
+    const stext = focusBlock.text.slice(0, focusOffset);
+    const etext = focusBlock.text.slice(focusOffset);
+    const newBlock = BlockUtil.createParagraphBlock(etext);
+    this.insertAfter(focusBlock, newBlock);
+    this.applyOperation(
+      createUpdateOperation(selection.focusBlock.id, { text: stext })
+    );
+    selection.collapse(newBlock);
+    return newBlock;
+  }
 
-    insertBlocks(blocks: BlockInterface[]){
-      const { focusBlock, focusOffset } = selection
-      if(!blocks.length) return
-      let text = focusBlock.text ? focusBlock.text.slice(0, focusOffset) : ""
-      const last = blocks[blocks.length - 1]
-      const lastOffset = focusBlock.text.length - focusOffset
-      last.text += focusBlock?.text?.slice?.(focusOffset) || ''
-      const first = blocks.shift()
-      text += (first?.text || '')
-      model.applyOperation(createUpdateOperation(focusBlock.id, { text }));
-      if(blocks.length){
-        this.insertAfterBlocks(focusBlock, blocks)
-      }
-      if(blocks.includes(last)){
-        selection.collapse(last, last.text.length - lastOffset)
-      }else{
-        selection.collapse(focusBlock, focusBlock.text.length - lastOffset)
-      }
+  insertBefore(block: BlockInterface, newBlock: BlockInterface) {
+    const blocks = [...block.parent.blocks];
+    const index = blocks.indexOf(block);
+    blocks.splice(index, 0, newBlock);
+    console.log("insertBefore", blocks);
+    this.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
+  }
+  insertAfter(block: BlockInterface, newBlock: BlockInterface) {
+    const blocks = [...block.parent.blocks];
+    const index = blocks.indexOf(block);
+    blocks.splice(index + 1, 0, newBlock);
+    this.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
+  }
 
-    },
+  insertAfterBlocks(block: BlockInterface, newBlocks: BlockInterface[]) {
+    const blocks = [...block.parent.blocks];
+    const index = blocks.indexOf(block);
+    blocks.splice(index + 1, 0, ...newBlocks);
+    this.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
+  }
 
-    replaceBlock(block: BlockInterface, newBlock: BlockInterface) {
-      const blocks = [...block.parent.blocks];
-      const index = blocks.indexOf(block);
-      blocks.splice(index, 1, newBlock);
-      model.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
-    },
-    mergeBlock(targetBlock: BlockInterface, block: BlockInterface) {
-      const blocks = [...targetBlock.blocks, ...block.blocks];
-      model.applyOperation(createUpdateOperation(targetBlock.id, { blocks }));
-    },
-  };
+  insertBlocks(blocks: BlockInterface[]) {
+    const { selection } = this.editor
+    const { focusBlock, focusOffset } = selection
+    if (!blocks.length) return
+    let text = focusBlock.text ? focusBlock.text.slice(0, focusOffset) : ""
+    const last = blocks[blocks.length - 1]
+    const lastOffset = focusBlock.text.length - focusOffset
+    last.text += focusBlock?.text?.slice?.(focusOffset) || ''
+    const first = blocks.shift()
+    text += (first?.text || '')
+    this.applyOperation(createUpdateOperation(focusBlock.id, { text }));
+    if (blocks.length) {
+      this.insertAfterBlocks(focusBlock, blocks)
+    }
+    if (blocks.includes(last)) {
+      selection.collapse(last, last.text.length - lastOffset)
+    } else {
+      selection.collapse(focusBlock, focusBlock.text.length - lastOffset)
+    }
 
-  return model;
+  }
+
+  replaceBlock(block: BlockInterface, newBlock: BlockInterface) {
+    const blocks = [...block.parent.blocks];
+    const index = blocks.indexOf(block);
+    blocks.splice(index, 1, newBlock);
+    this.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
+  }
+  mergeBlock(targetBlock: BlockInterface, block: BlockInterface) {
+    const blocks = [...targetBlock.blocks, ...block.blocks];
+    this.applyOperation(createUpdateOperation(targetBlock.id, { blocks }));
+  }
+
 }

@@ -13,7 +13,7 @@ import { marked } from "marked";
 //   startOffset: number;
 // }
 
-const Block = {
+export const BlockUtil = {
   domToBlock(domNode) {
     while (domNode && !DomToBlock.get(domNode)) {
       domNode = domNode.parentNode;
@@ -32,8 +32,8 @@ const Block = {
   },
   range(range) {
     const { endContainer, startContainer, endOffset, startOffset } = range;
-    const start = Block.fixOffset(startContainer, startOffset);
-    const end = Block.fixOffset(endContainer, endOffset);
+    const start = BlockUtil.fixOffset(startContainer, startOffset);
+    const end = BlockUtil.fixOffset(endContainer, endOffset);
     return {
       endOffset: end.offset,
       startOffset: start.offset,
@@ -44,16 +44,16 @@ const Block = {
   contains(parentBlocks: BlockInterface, block: BlockInterface) {
     if (!parentBlocks.blocks) return false;
     for (let b of parentBlocks.blocks) {
-      if (b === block || Block.contains(b, block)) return true;
+      if (b === block || BlockUtil.contains(b, block)) return true;
     }
     return false;
   },
   getCommonBlock: (block1?: BlockInterface, block2?: BlockInterface) => {
     if (!block1 || !block2) return null;
-    if (Block.contains(block1, block2)) {
+    if (BlockUtil.contains(block1, block2)) {
       return block1;
     } else {
-      return Block.getCommonBlock(block1.parent, block2); // 递归的使用
+      return BlockUtil.getCommonBlock(block1.parent, block2); // 递归的使用
     }
   },
   getDomByid: (id) => idToDom.get(id),
@@ -101,7 +101,7 @@ const Block = {
   },
   createListBlock(block, ordered = false, start = 1) {
     return {
-      blocks: [Block.createListItemBlock(block)],
+      blocks: [BlockUtil.createListItemBlock(block)],
       isBlock: true,
       type: "list",
       ordered: ordered,
@@ -119,22 +119,19 @@ const Block = {
     if (!block) return null;
     const index = block.parent.blocks.indexOf(block);
     return index === block.parent.blocks.length - 1
-      ? Block.getNextBlock(block.parent) || block
+      ? BlockUtil.getNextBlock(block.parent) || block
       : block.parent.blocks[index + 1];
   },
   getPreviousTextBlock(id) {
     let index = path.indexOf(id);
-    return Block.getBlockByid(index === 0 ? id : path[index - 1]);
+    return BlockUtil.getBlockByid(index === 0 ? id : path[index - 1]);
   },
   getNextTextBlock(id) {
     let index = path.indexOf(id);
-    return Block.getBlockByid(index === path.length - 1 ? id : path[index + 1]);
+    return BlockUtil.getBlockByid(index === path.length - 1 ? id : path[index + 1]);
   },
   isTextBlock(id) {
     return path.includes(id);
   },
 };
 
-// @ts-ignore
-window.Block = Block;
-export { Block };

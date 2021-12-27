@@ -1,10 +1,15 @@
-import { editor } from "src/editor";
-import { selection } from "src/selection";
 import { InputEventStrategy } from ".";
-import { Block } from "../block";
+import { BlockUtil } from "../block";
+import { EditorInterface } from "../editor";
 
 export class TableInputEvent implements InputEventStrategy {
+  editor: EditorInterface
+  constructor(editor: EditorInterface) {
+    this.editor = editor
+  }
     accept(inputType: string, event?: InputEvent): boolean {
+      const { editor } = this
+      const { selection } = editor
       const { focusOffset, focusBlock, anchorBlock } = selection;
       if (
         focusOffset === 0 &&
@@ -25,6 +30,8 @@ export class TableInputEvent implements InputEventStrategy {
       return false;
     }
     execute(inputType: string, event?: InputEvent): void {
+      const { editor } = this
+      const { selection } = editor
       const { focusOffset, focusBlock } = selection;
   
       if (
@@ -34,7 +41,7 @@ export class TableInputEvent implements InputEventStrategy {
         focusBlock.parent.blocks.indexOf(focusBlock) === 0 && 
         selection.type === "Caret"
       ) {
-        const block = Block.getPreviousTextBlock(focusBlock.id)
+        const block = BlockUtil.getPreviousTextBlock(focusBlock.id)
         editor.model.deleteBlock( focusBlock.parent.id )
         selection.collapse(block, block.text.length);
       }

@@ -1,7 +1,6 @@
-import { selection, SelectionInterface } from "./selection";
-import { createUpdateOperation, createDelOperation } from "./operation";
-import { Block } from "./block";
-import { BlockInterface, createModel, Model } from "./model";
+import { Selection, SelectionInterface } from "./selection";
+import { BlockUtil } from "./block"; 
+import { BlockInterface, Model, ModelInterface } from "./model";
 import { HtmlToModel, parseMD } from "./parse";
 import { Event } from "./Event";
 import {
@@ -14,12 +13,12 @@ import {
 } from "./inputEvent";
 import { History } from "./history";
 
-function ConvertBlock(block: BlockInterface) {
-  const { model } = editor;
+function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
+  const { model, selection } = editor;
   if (block.type === "heading" || block.type === "paragraph") {
     // heading
     if (/^(#+)\s(.*)/.test(block.text)) {
-      const newBlock = Block.createHeading(block.text);
+      const newBlock = BlockUtil.createHeading(block.text);
       selection.focusOffset -= newBlock.depth;
       model.replaceBlock(block, newBlock);
       selection.collapse(newBlock);
@@ -27,7 +26,7 @@ function ConvertBlock(block: BlockInterface) {
 
     if (/^[+]{0,1}(\d+)\.\s/.test(block.text)) {
       const start = block.text.split(".")[0];
-      const newBlock = Block.createListBlock(block, true, Number(start));
+      const newBlock = BlockUtil.createListBlock(block, true, Number(start));
       // block.text = block.text.replace("- ", "");
       selection.focusOffset -= start.length + 1;
       model.updateBlock(block, {
@@ -39,7 +38,7 @@ function ConvertBlock(block: BlockInterface) {
 
     // ul
     if (/^[\\s]*[-\\*\\+] +(.*)/.test(block.text)) {
-      const newBlock = Block.createListBlock(block);
+      const newBlock = BlockUtil.createListBlock(block);
       // block.text = block.text.replace("- ", "");
       selection.focusOffset -= 2;
       model.updateBlock(block, { text: block.text.replace("- ", "") });
@@ -48,7 +47,7 @@ function ConvertBlock(block: BlockInterface) {
     }
     // quote
     if (block.text.startsWith("> ")) {
-      const newBlock = Block.createBlockquoteBlock(block);
+      const newBlock = BlockUtil.createBlockquoteBlock(block);
       selection.focusOffset -= 2;
       model.updateBlock(block, { text: block.text.replace("> ", "") });
       model.replaceBlock(block, newBlock);
@@ -57,8 +56,8 @@ function ConvertBlock(block: BlockInterface) {
 
     // hr
     if (block.text.startsWith("---")) {
-      selection.collapse(Block.getNextTextBlock(block.id));
-      model.replaceBlock(block, Block.createHrBlock());
+      selection.collapse(BlockUtil.getNextTextBlock(block.id));
+      model.replaceBlock(block, BlockUtil.createHrBlock());
     }
 
     // task
@@ -80,29 +79,31 @@ function ConvertBlock(block: BlockInterface) {
   }
 }
 
-//
+//\\
+export interface EditorInterface extends Editor {}
 
 export class Editor {
-  model: Model;
+  model: ModelInterface;
   selection: SelectionInterface;
   inputStrategys: InputEventStrategy[] = [];
   history: History;
-  idToBlock = new Map();
+  idToBlock: Map<string | number, BlockInterface> = new Map();
   constructor() {
     this.history = new History(this);
-    this.model = createModel(this, parseMD());
-    this.selection = selection;
-    this.inputStrategys.push(new BaseInputEvent());
-    this.inputStrategys.push(new BlockquoteInputEvent());
-    this.inputStrategys.push(new ListInputEvent());
-    this.inputStrategys.push(new CodeInputEvent());
-    this.inputStrategys.push(new TableInputEvent());
+    this.model = new Model(this, parseMD());
+    this.selection = new Selection;
+
+    this.inputStrategys.push(new BaseInputEvent(this));
+    this.inputStrategys.push(new BlockquoteInputEvent(this));
+    this.inputStrategys.push(new ListInputEvent(this));
+    this.inputStrategys.push(new CodeInputEvent(this));
+    this.inputStrategys.push(new TableInputEvent(this));
 
     Event.on("block-change", this.blockChange.bind(this));
   }
 
   blockChange(block: BlockInterface) {
-    if(block?.parent?.type !== 'table') ConvertBlock(block);
+    if(block?.parent?.type !== 'table') ConvertBlock(this, block);
   }
   applyInputStrategys(inputType: string, Event: InputEvent) {
     const strategys = [...this.inputStrategys];
@@ -141,13 +142,13 @@ export class Editor {
     }
     if (inputType === "insertParagraph") {
       // insertParagraph 之后
-      const { focusBlock } = editor.selection;
+      const { focusBlock } = this.selection;
 
       if (
         focusBlock.text.trimEnd() === "$$" &&
         focusBlock.type === "paragraph"
       ) {
-        const newBlock = Block.createCodeBlock( "math", "");
+        const newBlock = BlockUtil.createCodeBlock( "math", "");
         this.model.replaceBlock(focusBlock, newBlock);
 
         this.selection.collapse(newBlock);
@@ -160,7 +161,7 @@ export class Editor {
         /^\`{3,10}/.test(focusBlock.text) &&
         focusBlock.type === "paragraph"
       ) {
-        const newBlock = Block.createCodeBlock(
+        const newBlock = BlockUtil.createCodeBlock(
           focusBlock.text.replace(/^\`{3,10}/, "")
         );
         this.model.replaceBlock(focusBlock, newBlock);
@@ -182,20 +183,20 @@ export class Editor {
   compositionOffset: number;
   onCompositionstart = () => {
     this.isComposing = true;
-    this.compositionOffset = selection.focusOffset;
+    this.compositionOffset = this.selection.focusOffset;
   };
   onCompositionupdate = () => {};
   onCompositionend = (event: CompositionEvent) => {
     this.isComposing = false;
     console.log("onDomCompositionend", event.data);
-    selection.focusOffset = this.compositionOffset;
+    this.selection.focusOffset = this.compositionOffset;
     this.model.insertText(event.data);
   };
 }
 
-export const editor = new Editor();
+// export const editor = new Editor();
 // @ts-ignore
-window.editor = editor;
+// window.editor = editor;
 
 // export let index = 0;
 // export const idToBlock = {};

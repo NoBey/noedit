@@ -1,10 +1,15 @@
-import { Block } from "src/block";
-import { editor } from "src/editor";
-import { selection } from "src/selection";
+import { BlockUtil } from "../block";
 import { InputEventStrategy } from ".";
+import { EditorInterface } from "../editor";
 
 export class ListInputEvent implements InputEventStrategy {
+  editor: EditorInterface
+  constructor(editor: EditorInterface) {
+    this.editor = editor
+  }
   accept(inputType: string, event?: InputEvent): boolean {
+    const { editor } = this
+    const { selection } = editor
     const { focusOffset, focusBlock } = selection;
     if (
       focusOffset === 0 &&
@@ -32,6 +37,8 @@ export class ListInputEvent implements InputEventStrategy {
     return false;
   }
   execute(inputType: string, event?: InputEvent): void {
+    const { editor } = this
+    const { selection } = editor
     const { focusOffset, focusBlock } = selection;
     if (
       focusOffset === 0 &&
@@ -40,7 +47,7 @@ export class ListInputEvent implements InputEventStrategy {
       focusBlock.parent.blocks.indexOf(focusBlock) === 0 &&
       selection.type === "Caret"
     ) {
-      const preBlock = Block.getPreviousBlock(focusBlock.parent);
+      const preBlock = BlockUtil.getPreviousBlock(focusBlock.parent);
       if (preBlock.blocks.length === 1 && preBlock.blocks[0].text === "") {
         editor.model.deleteBlock(preBlock.blocks[0].id);
       }
@@ -60,8 +67,8 @@ export class ListInputEvent implements InputEventStrategy {
           }
         }
 
-        const newBlock = Block.createListItemBlock(
-          Block.createParagraphBlock(focusBlock.text.slice(0, focusOffset)),
+        const newBlock = BlockUtil.createListItemBlock(
+          BlockUtil.createParagraphBlock(focusBlock.text.slice(0, focusOffset)),
           focusBlock.parent.task,
           focusBlock.parent.checked
         );
@@ -78,7 +85,7 @@ export class ListInputEvent implements InputEventStrategy {
       ) {
         editor.model.insertAfter(
           focusBlock.parent,
-          Block.createListItemBlock(
+          BlockUtil.createListItemBlock(
             focusBlock,
             focusBlock.parent.task,
             focusBlock.parent.checked

@@ -1,9 +1,15 @@
-import { editor } from "src/editor";
-import { selection } from "src/selection";
+
 import { InputEventStrategy } from ".";
+import { EditorInterface } from "../editor";
 
 export class BlockquoteInputEvent implements InputEventStrategy {
+  editor: EditorInterface
+  constructor(editor: EditorInterface) {
+    this.editor = editor
+  }
     accept(inputType: string, event?: InputEvent): boolean {
+      const { editor } = this
+      const { selection } = editor
       const { focusOffset, focusBlock } = selection;
       if (
         focusOffset === 0 &&
@@ -27,6 +33,8 @@ export class BlockquoteInputEvent implements InputEventStrategy {
       return false;
     }
     execute(inputType: string, event?: InputEvent): void {
+      const { editor } = this
+      const { selection } = editor
       const { focusOffset, focusBlock } = selection;
       if (
         focusOffset === 0 &&

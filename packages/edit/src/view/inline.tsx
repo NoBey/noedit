@@ -1,5 +1,5 @@
 import React, { useLayoutEffect } from "react";
-import { editor } from "../editor";
+// import { editor } from "../editor";
 import { path } from ".";
 import { marked } from "marked";
 

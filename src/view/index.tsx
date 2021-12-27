@@ -7,7 +7,7 @@ import React, {
   useEffect,
 } from "react";
 import { editor } from "../editor";
-import { Block as BlockUtil } from "../block";
+// import { Block as BlockUtil } from "../block";
 // import ReactPrismEditor from "react-prism-editor";
 import { InlineText } from "./inline";
 import { Code } from "./Code";

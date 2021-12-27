@@ -5,9 +5,9 @@ import React, {
   LegacyRef,
   KeyboardEvent,
   useEffect,
+  ReactNode
 } from "react";
-import { editor } from "../editor";
-import { Block as BlockUtil } from "../block";
+// import { editor } from "../editor";
 // import ReactPrismEditor from "react-prism-editor";
 import { InlineText } from "./inline";
 import { Code } from "./Code";
@@ -17,6 +17,8 @@ import { Heading } from "./Heading";
 import { Blockquote } from "./Blockquote";
 import { Table } from "./Table";
 import { Paragraph, TextBlock } from "./Paragraph";
+import { EditorInterface } from "../editor";
+import { EditorContext, useEditor } from "../hooks/useEditor";
 
 export { InlineText };
 export let path = [];
@@ -43,7 +45,18 @@ window.idToDom = idToDom;
 // @ts-ignore
 window.DomToBlock = DomToBlock;
 
-export function Root({ blocks, id }) {
+ 
+export function Edit({ editor, children }: { children: ReactNode, editor: EditorInterface }) {
+
+  return <EditorContext.Provider value={editor}>{children}</EditorContext.Provider>
+}
+
+
+export function Root() {
+  const editor = useEditor()
+
+  const { blocks, id } = editor.model._model
+
   const ref = useRef<HTMLDivElement>();
   useLayoutEffect(() => {
     ref.current.addEventListener("beforeinput", editor.onBeforeInput);
@@ -64,11 +77,8 @@ export function Root({ blocks, id }) {
       idToDom.delete(id);
     };
   }, [id]);
-
   // useEffect(() => {
   //   console.log('useEffect',  document.querySelector('h1').innerText)
-
-   
   // })
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.metaKey && event.key === "z") {
@@ -93,6 +103,7 @@ export function Root({ blocks, id }) {
 }
 
 export function Block(props) {
+  const editor = useEditor()
   const BlockComponent = BlockComponentMap[props.type];
   const ref = useRef<HTMLBaseElement>();
   useLayoutEffect(() => {
