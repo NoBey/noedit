@@ -1,10 +1,8 @@
-import { type } from "os";
-import { BlockUtil } from "./block";
+// import { BlockUtil } from "./block";
 import { Event } from "./Event";
 import {
   createDelOperation,
   createUpdateOperation,
-  startOperations,
 } from "./operation";
 // import { selection } from "./selection";
 import { EditorInterface } from "./editor";
@@ -32,6 +30,8 @@ export class Model {
   _model: BlockInterface
   constructor(editor, _model: BlockInterface) {
     this.editor = editor
+    
+    this.normalize = this.normalize.bind(this)
     this._model = this.normalize(_model)
   }
   normalize(block: BlockInterface, parent?: BlockInterface) {
@@ -79,16 +79,17 @@ export class Model {
   }
 
   applyOperation(operation) {
+    const { editor } = this
     const { type, arg } = operation;
     if (type === "update") {
-      const block = BlockUtil.getBlockByid(arg.id);
+      const block = editor.getBlockByid(arg.id);
       const keys = Object.keys(arg);
       keys.forEach((k) => {
         block[k] = arg[k];
       });
     }
     if (type === "delete") {
-      const block = BlockUtil.getBlockByid(arg.id);
+      const block = editor.getBlockByid(arg.id);
       block.parent.blocks = block.parent.blocks.filter(
         ({ id }) => id !== arg.id
       );
@@ -98,13 +99,14 @@ export class Model {
   }
 
   deleteBlock(id) {
-    this.applyOperation(createDelOperation(id));
+    this.applyOperation(createDelOperation(this.editor, id));
   }
 
   deleteContent(range) {
+    const { editor } = this
     const { selection } = this.editor
     const { startContainer, endContainer, startOffset, endOffset } =
-      BlockUtil.range(range);
+    editor.range(range);
 
     if (startContainer === endContainer) {
       if (startOffset === endOffset) return;
@@ -128,25 +130,25 @@ export class Model {
         text = text.slice(0, startOffset) + text.slice(endOffset);
       }
       this.applyOperation(
-        createUpdateOperation(startContainer.id, { text })
+        createUpdateOperation(editor, startContainer.id, { text })
       );
     } else {
       let text = startContainer.text.slice(0, startOffset);
       text += (endContainer?.text || '').slice(endOffset);
       this.updateBlock(startContainer, { text });
 
-      const stack = [BlockUtil.getCommonBlock(startContainer, endContainer)];
+      const stack = [editor.getCommonBlock(startContainer, endContainer)];
       let flag = false;
       while (stack.length) {
         const block = stack.pop();
         [...(block.blocks || [])].reverse().forEach((b) => {
           stack.push(b);
         });
-        if (flag && (BlockUtil.isTextBlock(block.id) || block.type === "hr" || block.type === "table")) {
+        if (flag && (editor.isTextBlock(block.id) || block.type === "hr" || block.type === "table")) {
           if (block?.parent?.type === 'table') {
-            this.applyOperation(createUpdateOperation(block.id, { text: "" }));
+            this.applyOperation(createUpdateOperation(editor, block.id, { text: "" }));
           } else {
-            this.applyOperation(createDelOperation(block.id));
+            this.applyOperation(createDelOperation(editor, block.id));
           }
         }
         if (block === startContainer) flag = true;
@@ -178,7 +180,7 @@ export class Model {
     text += selection.focusBlock.text.slice(focusOffset);
 
     this.applyOperation(
-      createUpdateOperation(selection.focusBlock.id, { text })
+      createUpdateOperation(this.editor, selection.focusBlock.id, { text })
     );
     console.log(focusOffset, data.length, data, text)
     selection.collapse(focusBlock, focusOffset + data.length);
@@ -186,22 +188,23 @@ export class Model {
   }
 
   updateBlock(block: BlockInterface, arg) {
-    this.applyOperation(createUpdateOperation(block.id, arg));
+    this.applyOperation(createUpdateOperation(this.editor, block.id, arg));
   }
 
   updateBlockById(id: string, arg) {
-    this.applyOperation(createUpdateOperation(id, arg));
+    this.applyOperation(createUpdateOperation(this.editor, id, arg));
   }
 
   insertParagraph(): BlockInterface {
+    const { editor } = this
     const { selection } = this.editor
     const { focusBlock, focusOffset } = selection;
     const stext = focusBlock.text.slice(0, focusOffset);
     const etext = focusBlock.text.slice(focusOffset);
-    const newBlock = BlockUtil.createParagraphBlock(etext);
+    const newBlock = editor.createParagraphBlock(etext);
     this.insertAfter(focusBlock, newBlock);
     this.applyOperation(
-      createUpdateOperation(selection.focusBlock.id, { text: stext })
+      createUpdateOperation(editor, selection.focusBlock.id, { text: stext })
     );
     selection.collapse(newBlock);
     return newBlock;
@@ -212,20 +215,20 @@ export class Model {
     const index = blocks.indexOf(block);
     blocks.splice(index, 0, newBlock);
     console.log("insertBefore", blocks);
-    this.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
+    this.applyOperation(createUpdateOperation(this.editor,block.parent.id, { blocks }));
   }
   insertAfter(block: BlockInterface, newBlock: BlockInterface) {
     const blocks = [...block.parent.blocks];
     const index = blocks.indexOf(block);
     blocks.splice(index + 1, 0, newBlock);
-    this.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
+    this.applyOperation(createUpdateOperation(this.editor, block.parent.id, { blocks }));
   }
 
   insertAfterBlocks(block: BlockInterface, newBlocks: BlockInterface[]) {
     const blocks = [...block.parent.blocks];
     const index = blocks.indexOf(block);
     blocks.splice(index + 1, 0, ...newBlocks);
-    this.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
+    this.applyOperation(createUpdateOperation(this.editor, block.parent.id, { blocks }));
   }
 
   insertBlocks(blocks: BlockInterface[]) {
@@ -238,7 +241,7 @@ export class Model {
     last.text += focusBlock?.text?.slice?.(focusOffset) || ''
     const first = blocks.shift()
     text += (first?.text || '')
-    this.applyOperation(createUpdateOperation(focusBlock.id, { text }));
+    this.applyOperation(createUpdateOperation(this.editor, focusBlock.id, { text }));
     if (blocks.length) {
       this.insertAfterBlocks(focusBlock, blocks)
     }
@@ -254,11 +257,11 @@ export class Model {
     const blocks = [...block.parent.blocks];
     const index = blocks.indexOf(block);
     blocks.splice(index, 1, newBlock);
-    this.applyOperation(createUpdateOperation(block.parent.id, { blocks }));
+    this.applyOperation(createUpdateOperation(this.editor, block.parent.id, { blocks }));
   }
   mergeBlock(targetBlock: BlockInterface, block: BlockInterface) {
     const blocks = [...targetBlock.blocks, ...block.blocks];
-    this.applyOperation(createUpdateOperation(targetBlock.id, { blocks }));
+    this.applyOperation(createUpdateOperation(this.editor, targetBlock.id, { blocks }));
   }
 
 }

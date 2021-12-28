@@ -1,6 +1,6 @@
 import Prism from "prismjs";
 import React, { forwardRef, LegacyRef, useEffect, useRef, useState } from "react";
-import { path } from ".";
+// import { path } from ".";
 // import { editor } from '../editor'
 Prism.highlightAll();
 import "prismjs/components/prism-latex";
@@ -117,7 +117,7 @@ export const FlowCode = (props) => {
 
 export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
   const editor = useEditor()
-  path.push(props.id);
+  editor.textPath.push(props.id);
   const [u, update] = useState(0)
   const forceUpdate = () => update(i => i + 1)
   if (props.lang === 'math') return <div className="md-code md-math-block" ref={ref} ><MathCode {...props} /></div>

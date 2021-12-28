@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import "./index.less";
 import { Edit, Root } from "./view";
 // import { editor } from "./editor";
-import { Menu } from './component';
+// import { Menu } from './component';
 import { Editor } from "./editor";
 // .lexer('> I am using marked.')
 

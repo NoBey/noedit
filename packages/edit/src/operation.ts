@@ -1,51 +1,53 @@
-import { BlockUtil } from "./block";
-import { editor } from "./editor";
+// import { BlockUtil } from "./block";
+// import { editor } from "./editor";
 // insert_node merge_node move_node remove_node split_node set_node
+
+import { EditorInterface } from "./editor"
 
 export const operations = []
 
 let optimer
-export function startOperations(op){
+export function startOperations(editor, op){
   operations.push(op)
   if(optimer) clearTimeout(optimer)
-  optimer = setTimeout(() => stopOperations() , 10)
+  optimer = setTimeout(() => stopOperations(editor) , 10)
 }
-function stopOperations(){
+function stopOperations(editor){
   const { focusBlock, focusOffset, type, range } = editor.selection
   editor.history.add({ ops: [...operations] , focusBlock, focusOffset, type, range: range })
   operations.length = 0
 }
 
 
-export function createUpdateOperation(id, arg) {
+export function createUpdateOperation(editor, id, arg) {
   const _arg = {}
   const keys = Object.keys(arg)
-  const block = BlockUtil.getBlockByid(id)
+  const block = editor.getBlockByid(id)
   keys.forEach(k => _arg[k] = block[k])
 
   const invert = () => {
-    return createOperation("update", { id, ..._arg })
+    return createOperation(editor, "update", { id, ..._arg })
   }
-  return createOperation("update", { id, ...arg }, invert);
+  return createOperation(editor, "update", { id, ...arg }, invert);
 }
 
-export function createDelOperation(id) {
-  const block = BlockUtil.getBlockByid(id)
+export function createDelOperation(editor, id) {
+  const block = editor.getBlockByid(id)
   const arg = { id: block.parent.id, blocks: [...block.parent.blocks] }
 
   const invert = () => {
-    return createOperation("update", arg) 
+    return createOperation(editor, "update", arg) 
   }
-  return createOperation("delete", { id }, invert );
+  return createOperation(editor, "delete", { id }, invert );
 }
 
-export function createOperation(type, arg, invert?: any) {
+export function createOperation(editor: EditorInterface, type, arg, invert?: any) {
   const op = {
     type,
     arg,
     invert
   }
-  if(invert) startOperations(op)
+  if(invert) startOperations(editor, op)
 
   return op;
 }

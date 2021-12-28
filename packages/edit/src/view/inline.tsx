@@ -1,9 +1,10 @@
 import React, { useLayoutEffect } from "react";
 // import { editor } from "../editor";
-import { path } from ".";
+// import { path } from ".";
 import { marked } from "marked";
 
 import { getKatexHtml } from "../utils";
+import { useEditor } from "../hooks/useEditor";
 const lex = new marked.Lexer();
 
 function encodeHTML(html) {
@@ -72,7 +73,8 @@ function genHtml(text) {
 // lex.inlineTokens()
 
 export const InlineText = ({ text, id }) => {
-  path.push(id);
+  const editor = useEditor()
+  editor.textPath.push(id);
   return (
     <span
       dangerouslySetInnerHTML={{

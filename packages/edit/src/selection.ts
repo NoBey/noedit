@@ -1,11 +1,13 @@
-import { BlockUtil } from "./block";
+// import { BlockUtil } from "./block";
 import { openTooltip } from "./component";
+import { EditorInterface } from "./editor";
 import { BlockInterface } from "./model";
 import { getKatexHtml, iterationTextNode } from "./utils";
 
 export interface SelectionInterface extends Selection {}
 
 export class Selection {
+  editor: EditorInterface
   selection = window.getSelection();
   anchorBlock?: BlockInterface;
   anchorOffset?: number;
@@ -20,7 +22,8 @@ export class Selection {
   endOffset?: number;
   skipSelectionchange = false;
 
-  constructor() {
+  constructor(editor) {
+    this.editor = editor
     document.addEventListener("selectionchange", this.change.bind(this));
   }
 
@@ -32,10 +35,10 @@ export class Selection {
   }
 
   reset() {
-    let { focusBlock, focusOffset } = this;
+    let { focusBlock, focusOffset, editor } = this;
     if (this.type === "None") return;
     this.skipSelectionchange = true;
-    const dom = BlockUtil.getDomByid(focusBlock.id);
+    const dom = editor.getDomByid(focusBlock.id);
     let offset = focusOffset;
     for (let tnode of iterationTextNode(dom)) {
 
@@ -45,7 +48,7 @@ export class Selection {
         offset -= tnode.length;
       }
     }
-    const text = BlockUtil.getTextByid(focusBlock.id);
+    const text = editor.getTextByid(focusBlock.id);
     if (text?.nodeName === "#text" && focusOffset > text.length)
       focusOffset = text.length;
     this.selection.collapse(text, focusOffset);
@@ -68,18 +71,19 @@ export class Selection {
     }
   }
   focusCode({ focusNode }) {
-    const block = BlockUtil.domToBlock(focusNode);
+    const {editor } = this
+    const block = editor.domToBlock(focusNode);
     Array.from(document.querySelectorAll(".md-code-focus")).forEach((dom) => {
       dom.classList.remove("md-code-focus");
     });
     if (block.type === "code") {
       console.log("code");
-      BlockUtil.getDomByid(block.id)?.classList.add("md-code-focus");
+      editor.getDomByid(block.id)?.classList.add("md-code-focus");
     }
   }
 
   change() {
-    const { selection } = this;
+    const { selection, editor } = this;
 
     console.log("change", selection);
 
@@ -88,11 +92,11 @@ export class Selection {
       this.focusCode(selection);
     }
 
-    const anchor = BlockUtil.fixOffset(
+    const anchor = editor.fixOffset(
       selection.anchorNode,
       selection.anchorOffset
     );
-    const focus = BlockUtil.fixOffset(selection.focusNode, selection.focusOffset);
+    const focus = editor.fixOffset(selection.focusNode, selection.focusOffset);
     if (this.skipSelectionchange) {
       this.skipSelectionchange = false;
       if (this.focusBlock === focus.block) return;
@@ -108,13 +112,13 @@ export class Selection {
     if (selection.type === "Range") {
       const _range = selection.getRangeAt(0);
       const { startContainer, startOffset, endContainer, endOffset } =
-      BlockUtil.range(_range);
+      editor.range(_range);
       this.range = _range;
       this.startOffset = startOffset;
       this.endOffset = endOffset;
       this.startContainer = startContainer;
       this.endContainer = endContainer;
-      this.commonAncestor = BlockUtil.domToBlock(_range.commonAncestorContainer);
+      this.commonAncestor = editor.domToBlock(_range.commonAncestorContainer);
     }
     // if(this.focusBlock.type === "code"){
     //   document.querySelector('#root').setAttribute('contentEditable', 'false')

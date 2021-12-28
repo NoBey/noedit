@@ -1,11 +1,10 @@
 import React, {
   useLayoutEffect,
   useRef,
-  forwardRef,
-  LegacyRef,
   KeyboardEvent,
   useEffect,
-  ReactNode
+  ReactNode,
+  useState
 } from "react";
 // import { editor } from "../editor";
 // import ReactPrismEditor from "react-prism-editor";
@@ -21,7 +20,7 @@ import { EditorInterface } from "../editor";
 import { EditorContext, useEditor } from "../hooks/useEditor";
 
 export { InlineText };
-export let path = [];
+// export let path = [];
 
 
 const BlockComponentMap = {
@@ -37,25 +36,27 @@ const BlockComponentMap = {
   table: Table,
 };
 
-export const idToDom = new Map();
-export const DomToBlock = new WeakMap();
+// export const idToDom = new Map();
+// export const DomToBlock = new WeakMap();
 
 // @ts-ignore
-window.idToDom = idToDom;
+// window.idToDom = idToDom;
 // @ts-ignore
-window.DomToBlock = DomToBlock;
+// window.DomToBlock = DomToBlock;
 
  
 export function Edit({ editor, children }: { children: ReactNode, editor: EditorInterface }) {
-
   return <EditorContext.Provider value={editor}>{children}</EditorContext.Provider>
 }
 
 
 export function Root() {
   const editor = useEditor()
-
-  const { blocks, id } = editor.model._model
+  const [model, setModel] = useState(editor.model._model)
+  useEffect(() => {
+    editor.model.onChange(() => setModel({ ...editor.model._model }));
+  }, [])
+  const { id, blocks } = model
 
   const ref = useRef<HTMLDivElement>();
   useLayoutEffect(() => {
@@ -68,13 +69,13 @@ export function Root() {
     );
     ref.current.addEventListener("compositionend", editor.onCompositionend);
 
-    idToDom.set(id, ref.current);
-    DomToBlock.set(ref.current, editor.idToBlock.get(id));
+    editor.idToDom.set(id, ref.current);
+    editor.DomToBlock.set(ref.current, editor.idToBlock.get(id));
 
     return () => {
-      idToDom.get(id).removeEventListener("beforeinput", editor.onBeforeInput);
-      DomToBlock.delete(idToDom.get(id));
-      idToDom.delete(id);
+      editor.idToDom.get(id).removeEventListener("beforeinput", editor.onBeforeInput);
+      editor.DomToBlock.delete(editor.idToDom.get(id));
+      editor.idToDom.delete(id);
     };
   }, [id]);
   // useEffect(() => {
@@ -86,8 +87,8 @@ export function Root() {
     }
   };
 
-  path.length = 0;
-
+  editor.textPath.length = 0;
+  // console.log({blocks})
   return (
     <div
       id="root"
@@ -108,14 +109,14 @@ export function Block(props) {
   const ref = useRef<HTMLBaseElement>();
   useLayoutEffect(() => {
     if (ref.current) {
-      idToDom.set(props.id, ref.current);
-      DomToBlock.set(ref.current, editor.idToBlock.get(props.id));
+      editor.idToDom.set(props.id, ref.current);
+      editor.DomToBlock.set(ref.current, editor.idToBlock.get(props.id));
       ref.current.dataset["type"] = props.type;
       ref.current.dataset["id"] = props.id;
     }
     return () => {
-      DomToBlock.delete(idToDom.get(props.id));
-      idToDom.delete(props.id);
+      editor.DomToBlock.delete(editor.idToDom.get(props.id));
+      editor.idToDom.delete(props.id);
     };
   }, [props.id]);
   return <BlockComponent ref={ref} {...props} />;

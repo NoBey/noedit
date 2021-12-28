@@ -1,5 +1,5 @@
 import { Selection, SelectionInterface } from "./selection";
-import { BlockUtil } from "./block"; 
+// import { BlockUtil } from "./block"; 
 import { BlockInterface, Model, ModelInterface } from "./model";
 import { HtmlToModel, parseMD } from "./parse";
 import { Event } from "./Event";
@@ -12,13 +12,15 @@ import {
   TableInputEvent,
 } from "./inputEvent";
 import { History } from "./history";
+import { iterationTextNode } from "./utils";
+import { marked } from "marked";
 
 function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
   const { model, selection } = editor;
   if (block.type === "heading" || block.type === "paragraph") {
     // heading
     if (/^(#+)\s(.*)/.test(block.text)) {
-      const newBlock = BlockUtil.createHeading(block.text);
+      const newBlock = editor.createHeading(block.text);
       selection.focusOffset -= newBlock.depth;
       model.replaceBlock(block, newBlock);
       selection.collapse(newBlock);
@@ -26,7 +28,7 @@ function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
 
     if (/^[+]{0,1}(\d+)\.\s/.test(block.text)) {
       const start = block.text.split(".")[0];
-      const newBlock = BlockUtil.createListBlock(block, true, Number(start));
+      const newBlock = editor.createListBlock(block, true, Number(start));
       // block.text = block.text.replace("- ", "");
       selection.focusOffset -= start.length + 1;
       model.updateBlock(block, {
@@ -38,7 +40,7 @@ function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
 
     // ul
     if (/^[\\s]*[-\\*\\+] +(.*)/.test(block.text)) {
-      const newBlock = BlockUtil.createListBlock(block);
+      const newBlock = editor.createListBlock(block);
       // block.text = block.text.replace("- ", "");
       selection.focusOffset -= 2;
       model.updateBlock(block, { text: block.text.replace("- ", "") });
@@ -47,7 +49,7 @@ function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
     }
     // quote
     if (block.text.startsWith("> ")) {
-      const newBlock = BlockUtil.createBlockquoteBlock(block);
+      const newBlock = editor.createBlockquoteBlock(block);
       selection.focusOffset -= 2;
       model.updateBlock(block, { text: block.text.replace("> ", "") });
       model.replaceBlock(block, newBlock);
@@ -56,8 +58,8 @@ function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
 
     // hr
     if (block.text.startsWith("---")) {
-      selection.collapse(BlockUtil.getNextTextBlock(block.id));
-      model.replaceBlock(block, BlockUtil.createHrBlock());
+      selection.collapse(editor.getNextTextBlock(block.id));
+      model.replaceBlock(block, editor.createHrBlock());
     }
 
     // task
@@ -79,6 +81,7 @@ function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
   }
 }
 
+
 //\\
 export interface EditorInterface extends Editor {}
 
@@ -88,10 +91,15 @@ export class Editor {
   inputStrategys: InputEventStrategy[] = [];
   history: History;
   idToBlock: Map<string | number, BlockInterface> = new Map();
+  idToDom = new Map();
+  DomToBlock = new WeakMap();
+  textPath = []
+
+
   constructor() {
     this.history = new History(this);
     this.model = new Model(this, parseMD());
-    this.selection = new Selection;
+    this.selection = new Selection(this);
 
     this.inputStrategys.push(new BaseInputEvent(this));
     this.inputStrategys.push(new BlockquoteInputEvent(this));
@@ -148,7 +156,7 @@ export class Editor {
         focusBlock.text.trimEnd() === "$$" &&
         focusBlock.type === "paragraph"
       ) {
-        const newBlock = BlockUtil.createCodeBlock( "math", "");
+        const newBlock = this.createCodeBlock( "math", "");
         this.model.replaceBlock(focusBlock, newBlock);
 
         this.selection.collapse(newBlock);
@@ -161,7 +169,7 @@ export class Editor {
         /^\`{3,10}/.test(focusBlock.text) &&
         focusBlock.type === "paragraph"
       ) {
-        const newBlock = BlockUtil.createCodeBlock(
+        const newBlock = this.createCodeBlock(
           focusBlock.text.replace(/^\`{3,10}/, "")
         );
         this.model.replaceBlock(focusBlock, newBlock);
@@ -192,6 +200,138 @@ export class Editor {
     this.selection.focusOffset = this.compositionOffset;
     this.model.insertText(event.data);
   };
+
+
+  domToBlock(domNode) {
+    const { DomToBlock } = this
+    while (domNode && !DomToBlock.get(domNode)) {
+      domNode = domNode.parentNode;
+    }
+    return DomToBlock.get(domNode);
+  }
+  fixOffset(node: Node, offset: number = 0) {
+    const { DomToBlock } = this
+    let parent = node;
+    while (parent && !DomToBlock.get(parent)) parent = parent.parentNode;
+    if (parent === node) return { node, offset, block: DomToBlock.get(node) };
+    for (let tnode of iterationTextNode(parent)) {
+      if (tnode === node) break;
+      offset += tnode.length;
+    }
+    return { node: parent, offset, block: DomToBlock.get(parent) };
+  }
+  range(range) {
+    const { endContainer, startContainer, endOffset, startOffset } = range;
+    const start = this.fixOffset(startContainer, startOffset);
+    const end = this.fixOffset(endContainer, endOffset);
+    return {
+      endOffset: end.offset,
+      startOffset: start.offset,
+      startContainer: start.block,
+      endContainer: end.block,
+    };
+  }
+  contains(parentBlocks: BlockInterface, block: BlockInterface) {
+    if (!parentBlocks.blocks) return false;
+    for (let b of parentBlocks.blocks) {
+      if (b === block || this.contains(b, block)) return true;
+    }
+    return false;
+  }
+
+  getCommonBlock(block1?: BlockInterface, block2?: BlockInterface){
+    if (!block1 || !block2) return null;
+    if (this.contains(block1, block2)) {
+      return block1;
+    } else {
+      return this.getCommonBlock(block1.parent, block2); // 递归的使用
+    }
+  }
+  getDomByid (id){
+    return  this.idToDom.get(id)
+  }
+  getBlockByid(id): BlockInterface{
+    return this.idToBlock.get(id)
+  }
+
+  getTextByid(id)  {
+    let node = this.idToDom.get(id);
+    while (node && !["#text", "BR"].includes(node.nodeName)) {
+      node = node.firstChild;
+    }
+    return node;
+  }
+  createParagraphBlock(text = "") {
+    return {
+      blocks: [],
+      isBlock: true,
+      text,
+      type: "paragraph",
+    };
+  }
+  createHrBlock(text = "") {
+    return {
+      blocks: [],
+      isBlock: true,
+      type: "hr",
+    };
+  }
+  createCodeBlock(lang = "", text = "") {
+    return { lang, raw: "", text, type: "code" };
+  }
+  createBlockquoteBlock(block) {
+    return {
+      blocks: [block],
+      isBlock: true,
+      type: "blockquote",
+    };
+  }
+  createListItemBlock(block, task = false, checked = false) {
+    return {
+      blocks: [block],
+      isBlock: true,
+      task,
+      checked,
+      type: "list_item",
+    };
+  }
+  createListBlock(block, ordered = false, start = 1) {
+    return {
+      blocks: [this.createListItemBlock(block)],
+      isBlock: true,
+      type: "list",
+      ordered: ordered,
+      start,
+    };
+  }
+  createHeading(text = "# ") {
+    return { ...marked.lexer(text)[0], blocks: [] } as BlockInterface;
+  }
+  getPreviousBlock(block: BlockInterface) {
+    const index = block.parent.blocks.indexOf(block);
+    return index === 0 ? block.parent : block.parent.blocks[index - 1];
+  }
+  getNextBlock(block: BlockInterface) {
+    if (!block) return null;
+    const index = block.parent.blocks.indexOf(block);
+    return index === block.parent.blocks.length - 1
+      ? this.getNextBlock(block.parent) || block
+      : block.parent.blocks[index + 1];
+  }
+  getPreviousTextBlock(id) {
+    const { textPath } = this
+    let index = textPath.indexOf(id);
+    return this.getBlockByid(index === 0 ? id : textPath[index - 1]);
+  }
+  getNextTextBlock(id) {
+    const { textPath } = this
+    let index = textPath.indexOf(id);
+    return this.getBlockByid(index === textPath.length - 1 ? id : textPath[index + 1]);
+  }
+  isTextBlock(id) {
+    const { textPath } = this
+    return textPath.includes(id);
+  }
 }
 
 // export const editor = new Editor();

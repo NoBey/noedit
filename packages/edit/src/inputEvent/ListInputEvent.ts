@@ -1,4 +1,4 @@
-import { BlockUtil } from "../block";
+// import { BlockUtil } from "../block";
 import { InputEventStrategy } from ".";
 import { EditorInterface } from "../editor";
 
@@ -47,7 +47,7 @@ export class ListInputEvent implements InputEventStrategy {
       focusBlock.parent.blocks.indexOf(focusBlock) === 0 &&
       selection.type === "Caret"
     ) {
-      const preBlock = BlockUtil.getPreviousBlock(focusBlock.parent);
+      const preBlock = editor.getPreviousBlock(focusBlock.parent);
       if (preBlock.blocks.length === 1 && preBlock.blocks[0].text === "") {
         editor.model.deleteBlock(preBlock.blocks[0].id);
       }
@@ -67,8 +67,8 @@ export class ListInputEvent implements InputEventStrategy {
           }
         }
 
-        const newBlock = BlockUtil.createListItemBlock(
-          BlockUtil.createParagraphBlock(focusBlock.text.slice(0, focusOffset)),
+        const newBlock = editor.createListItemBlock(
+          editor.createParagraphBlock(focusBlock.text.slice(0, focusOffset)),
           focusBlock.parent.task,
           focusBlock.parent.checked
         );
@@ -85,7 +85,7 @@ export class ListInputEvent implements InputEventStrategy {
       ) {
         editor.model.insertAfter(
           focusBlock.parent,
-          BlockUtil.createListItemBlock(
+          editor.createListItemBlock(
             focusBlock,
             focusBlock.parent.task,
             focusBlock.parent.checked

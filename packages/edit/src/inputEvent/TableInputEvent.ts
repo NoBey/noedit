@@ -1,5 +1,5 @@
 import { InputEventStrategy } from ".";
-import { BlockUtil } from "../block";
+// import { BlockUtil } from "../block";
 import { EditorInterface } from "../editor";
 
 export class TableInputEvent implements InputEventStrategy {
@@ -41,7 +41,7 @@ export class TableInputEvent implements InputEventStrategy {
         focusBlock.parent.blocks.indexOf(focusBlock) === 0 && 
         selection.type === "Caret"
       ) {
-        const block = BlockUtil.getPreviousTextBlock(focusBlock.id)
+        const block = editor.getPreviousTextBlock(focusBlock.id)
         editor.model.deleteBlock( focusBlock.parent.id )
         selection.collapse(block, block.text.length);
       }
