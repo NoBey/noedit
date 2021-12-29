@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from "react";
+import React, { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 // import { editor } from "../editor";
 // import { path } from ".";
 import { marked } from "marked";
@@ -7,79 +7,160 @@ import { getKatexHtml } from "../utils";
 import { useEditor } from "../hooks/useEditor";
 const lex = new marked.Lexer();
 
-function encodeHTML(html) {
-  const div = document.createElement("div")
-  div.appendChild(document.createTextNode(html))
-  return div.innerHTML
+
+function htmlUnEscape(str) {
+  return str.replace(/&lt;|&gt;|&quot;|&amp;/g, (match) => {
+    switch (match) {
+      case '&lt;':
+        return '<';
+      case '&gt;':
+        return '>';
+      case '&quot;':
+        return '"';
+      case '&amp;':
+        return '&';
+    }
+  });
 }
 
-const textType = ["text"];
+const Text = React.memo(({ text }: InlineToken) => htmlUnEscape(text)) 
 
-const inline = {
-  before: (before) => `<span class="inline-before">${encodeHTML(before)}</span>`,
-  after: (after) => `<span class="inline-after">${encodeHTML(after)}</span>`,
-  type: (type, content) => `<${type}>${content}</${type}>`,
-  link: ({ text, href, raw }) => {
-    if (text === raw) return `<a  herf='${href}'>${text}</a>`;
-    return `${inline.before("[")}<a>${text}</a>${inline.after(
-      "]"
-    )}<span class="inline-meta">${raw.split("]")[1]}</span>`;
-  },
-  image: ({ raw, href, text }) =>
-    `<span class="inline-meta">${raw}</span><img alt="${text}" src="${href}" />`,
-};
+const Em = React.memo( ({ text, raw, tokens = [] }: InlineToken) => {
+  const [before, after] = raw.split(text);
+  return <span className='inline'>
+    <span className="inline-before">{(before)}</span>
+    <em>{ tokens.length ? <InlineBlocks tokens={tokens} /> : text}</em>
+    <span className="inline-after">{(after)}</span>
+  </span>
+})
 
-function tokenToHtml(token) {
-  if (textType.includes(token.type)) {
-    return token.raw;
-  }
-  if (token.type === "link") {
-    return `<span class='inline'>${inline.link(token)}</span>`;
-  }
-  if (token.type === "image") {
-    return `<span class='inline'>${inline.image(token)}</span>`;
-  }
-  if (token.type === "html") {
-    return `<span class='inline'>${encodeHTML(token.raw)}</span>`;
-  }
+const Del = React.memo( ({ text, raw, tokens = [] }: InlineToken) => {
+  const [before, after] = raw.split(text);
+  return <span className='inline'>
+    <span className="inline-before">{(before)}</span>
+    <del>{ tokens.length ? <InlineBlocks tokens={tokens} /> : text}</del>
+    <span className="inline-after">{(after)}</span>
+  </span>
+})
 
-  // katex.renderToString('sdds')
+const Codespan =  React.memo(({ text, raw, tokens = [] }: InlineToken) => {
+  const [before, after] = raw.split(text);
+  return <span className='inline'>
+    <span className="inline-before">{(before)}</span>
+    <code>{ tokens.length ? <InlineBlocks tokens={tokens} /> : text}</code>
+    <span className="inline-after">{(after)}</span>
+  </span>
+})
 
-  const [before, after] = token.raw.split(token.text);
-  // if(token.type === 'codespan'){
-  //   return  `<span class='inline'>${inline.before(before)}${token.text}${inline.after(after)}</span>`
-  // }
-  if (token.type === "inline-math") {
-    return `<span class='inline inline-math'>${inline.before(
-      before
-    )}<span class="inline-meta">${token.text}</span>${getKatexHtml(token.text)}${inline.after(before)}</span>`;
-    // return `<span class='inline'>${}</span>`;
-  }
-  const content = inline.type(
-    token.type,
-    token?.tokens?.map(tokenToHtml)?.join("") || token.text
-  );
 
-  return `<span class='inline'>${inline.before(before)}${content}${inline.after(
-    after
-  )}</span>`;
-}
+const Strong =  React.memo(({ text, raw, tokens = [] }: InlineToken) => {
+  const [before, after] = raw.split(text);
+  return <span className='inline'>
+    <span className="inline-before">{(before)}</span>
+    <strong>{ tokens.length ? <InlineBlocks tokens={tokens} /> : text}</strong>
+    <span className="inline-after">{(after)}</span>
+  </span>
+})
 
-function genHtml(text) {
+const Link =  React.memo(({ text, raw, href }: InlineToken) => {
   // @ts-ignore
-  const tokens = lex.inlineTokens(text);
-  return tokens.map(tokenToHtml).join("");
-}
-// lex.inlineTokens()
+  if (text === raw) return <a herf={href}>{text}</a>
 
-export const InlineText = ({ text, id }) => {
+  return <span className='inline'>
+    <span className="inline-before">[</span>
+    <a>{text}</a>
+    <span className="inline-after">]</span>
+    <span className="inline-meta">{raw.split("]")[1]}</span>
+  </span>
+
+})
+
+const Escape =  React.memo(({ raw, text }: InlineToken) => {
+  const [before, after] = raw.split(text);
+  return <span className='inline'>
+    <span className="inline-before">{(before)}</span>
+    <span>{text}</span>
+  </span>
+})
+
+
+
+const Image = React.memo(({ text, raw, href }: InlineToken) => {
+  return <span className='inline'>
+    <span className="inline-meta">{raw}</span><img alt={text} src={href} />
+  </span>
+})
+
+const Html =  React.memo( ({ raw }: InlineToken) => {
+  return <span className='inline'>
+    {(raw)}
+  </span>
+})
+
+const InlineMath =  React.memo(({ text, raw, href }: InlineToken) => {
+  const ref = useRef<HTMLSpanElement>()
+  // const katex = getKatexHtml(text)
+  const [before, after] = raw.split(text);
+  useEffect(() => {
+    if (ref) {
+      const div = document.createElement('div')
+      div.innerHTML = getKatexHtml(text)
+      ref.current.replaceWith(div.children[0])
+    }
+  })
+
+  return <span className='inline inline-math'>
+    <span className="inline-before">{before}</span>
+    <span className="inline-meta">{text}</span>
+    <span ref={ref}></span>
+    <span className="inline-after">{after}</span>
+  </span>
+
+})
+
+const InlineMap = {
+  'del': Del,
+  'em': Em,
+  'codespan': Codespan,
+  'strong': Strong,
+  'html': Html,
+  "image": Image,
+  "link": Link,
+  "text": Text,
+  "escape": Escape,
+  "inline-math": InlineMath
+}
+
+
+const InlineBlocks = ({ tokens = [] }) => {
+
+  return <>
+    {tokens.map((token, i) => {
+      if (!InlineMap[token.type]) {
+        console.error('未找到 token', token, token.type)
+      }
+      const Cmp = InlineMap[token.type]
+      return <Cmp key={i} {...token} />
+    })}
+  </>
+
+}
+
+export interface InlineToken {
+  text?: string
+  raw: string
+  href?: string
+  tokens?: InlineToken[]
+}
+
+export const InlineText = React.memo( ({ text, id }: any) => {
   const editor = useEditor()
   editor.textPath.push(id);
+  const tokens = lex.inlineTokens(text, [])
+  if (!text || !tokens.length) return <span><br /></span>
   return (
-    <span
-      dangerouslySetInnerHTML={{
-        __html: text ?  (genHtml(text))  : "<br />",
-      }}
-    ></span>
+    <span>
+      <InlineBlocks tokens={tokens} />
+    </span>
   );
-};
+});

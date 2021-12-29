@@ -8,13 +8,16 @@ import { Edit, Root } from "./view";
 import { Editor } from "./editor";
 // .lexer('> I am using marked.')
 
+const editor = new Editor
+// @ts-ignore
+window.editor = editor
 export function App() {
   console.log('App')
   // const [model, setModel] = useState(editor.model._model);
   useEffect(() => {
     // editor.model.onChange(() => setModel({ ...editor.model._model }));
   }, []);
-  return <Edit editor={new Editor}>
+  return <Edit editor={editor}>
     <Root />
   </Edit>
 }

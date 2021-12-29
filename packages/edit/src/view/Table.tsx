@@ -1,8 +1,9 @@
 import React, { forwardRef, LegacyRef } from "react";
+import { BlockInterface } from "../model";
 import { Block } from './'
 
 export const Table = forwardRef(
-    (props: any, ref: LegacyRef<HTMLTableElement>) => {
+    (props: BlockInterface, ref: LegacyRef<HTMLTableElement>) => {
       return (
         <table ref={ref} className="md-table">
           <thead>

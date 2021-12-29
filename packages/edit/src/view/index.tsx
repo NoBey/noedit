@@ -56,6 +56,7 @@ export function Root() {
   useEffect(() => {
     editor.model.onChange(() => setModel({ ...editor.model._model }));
   }, [])
+  
   const { id, blocks } = model
 
   const ref = useRef<HTMLDivElement>();
@@ -105,7 +106,7 @@ export function Root() {
 
 export function Block(props) {
   const editor = useEditor()
-  const BlockComponent = BlockComponentMap[props.type];
+  const BlockComponent = (BlockComponentMap[props.type]);
   const ref = useRef<HTMLBaseElement>();
   useLayoutEffect(() => {
     if (ref.current) {

@@ -20,3 +20,10 @@ export function getKatexHtml(text){
     { throwOnError: false }
   )
 }
+
+export function getKatexElm(elm, text){
+  return katex.render(
+    text, elm, 
+    { throwOnError: false }
+  )
+}

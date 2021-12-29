@@ -1,9 +1,10 @@
 import React, { forwardRef, LegacyRef } from "react";
 import { InlineText } from ".";
+import { BlockInterface } from "../model";
 // import { editor } from "../editor";
 
 export const Paragraph = forwardRef(
-    ({ text, id }: any, ref: LegacyRef<HTMLParagraphElement>) => {
+    ({ text, id }: BlockInterface, ref: LegacyRef<HTMLParagraphElement>) => {
       return (
         <p ref={ref}>
           <InlineText text={text} id={id} />
@@ -13,7 +14,7 @@ export const Paragraph = forwardRef(
   );
   
   export const TextBlock = forwardRef(
-    ({ text, id }: any, ref: LegacyRef<HTMLParagraphElement>) => {
+    ({ text, id }: BlockInterface, ref: LegacyRef<HTMLParagraphElement>) => {
       return (
         <p ref={ref}>
           <InlineText text={text} id={id} />

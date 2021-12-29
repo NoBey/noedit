@@ -115,7 +115,7 @@ export const FlowCode = (props) => {
 }
 
 
-export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
+export const Code = React.memo(forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
   const editor = useEditor()
   editor.textPath.push(props.id);
   const [u, update] = useState(0)
@@ -135,4 +135,4 @@ export const Code = forwardRef((props: any, ref: LegacyRef<HTMLDivElement>) => {
       <Tooltip {...props} editor={editor} />
     </div>
   );
-});
+}));

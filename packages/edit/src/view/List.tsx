@@ -1,5 +1,6 @@
 import React, { forwardRef, LegacyRef, useState } from "react";
 import { useEditor } from "../hooks/useEditor";
+import { BlockInterface } from "../model";
 // import { editor } from "../editor";
 import { BlockList } from "./";
 
@@ -17,7 +18,7 @@ function CheckBox({ value, onChange = (v) => {} }) {
 
 // task 
 export const ListItem = forwardRef(
-  ({ blocks, task = false, checked, id }: any, ref: LegacyRef<HTMLLIElement>) => {
+  ({ blocks, task = false, checked, id }: BlockInterface, ref: LegacyRef<HTMLLIElement>) => {
     const editor = useEditor()
     const change = (checked) => {
       if(id) editor.model.updateBlockById(id as string, { checked })
@@ -33,7 +34,7 @@ export const ListItem = forwardRef(
 );
 
 export const List = forwardRef(
-  ({ blocks, ordered, start }: any, ref: any) => {
+  ({ blocks, ordered, start }: BlockInterface, ref: any) => {
     const Cpm = ordered ? 'ol' : 'ul'
     return (
       <Cpm ref={ref} start={start}>

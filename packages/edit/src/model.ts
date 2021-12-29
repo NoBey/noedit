@@ -18,6 +18,9 @@ export interface BlockInterface {
   depth?: number;
   task?: boolean;
   checked?: boolean;
+  ordered?:boolean;
+  start?: number;
+  raw?: string;
 }
 
 let index = 0;
