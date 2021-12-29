@@ -131,7 +131,6 @@ const InlineMap = {
   "inline-math": InlineMath
 }
 
-
 const InlineBlocks = ({ tokens = [] }) => {
 
   return <>

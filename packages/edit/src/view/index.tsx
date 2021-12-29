@@ -6,9 +6,8 @@ import React, {
   ReactNode,
   useState
 } from "react";
-// import { editor } from "../editor";
-// import ReactPrismEditor from "react-prism-editor";
-import { InlineText } from "./inline";
+
+// import { InlineText } from "./inline";
 import { Code } from "./Code";
 import { Hr } from "./Hr";
 import { List, ListItem } from "./List";
@@ -19,36 +18,9 @@ import { Paragraph, TextBlock } from "./Paragraph";
 import { EditorInterface } from "../editor";
 import { EditorContext, useEditor } from "../hooks/useEditor";
 
-export { InlineText };
-// export let path = [];
-
-
-const BlockComponentMap = {
-  hr: Hr,
-  paragraph: Paragraph,
-  list: List,
-  list_item: ListItem,
-  heading: Heading,
-  blockquote: Blockquote,
-  space: () => <></>,
-  text: TextBlock,
-  code: Code,
-  table: Table,
-};
-
-// export const idToDom = new Map();
-// export const DomToBlock = new WeakMap();
-
-// @ts-ignore
-// window.idToDom = idToDom;
-// @ts-ignore
-// window.DomToBlock = DomToBlock;
-
- 
 export function Edit({ editor, children }: { children: ReactNode, editor: EditorInterface }) {
   return <EditorContext.Provider value={editor}>{children}</EditorContext.Provider>
 }
-
 
 export function Root() {
   const editor = useEditor()
@@ -79,9 +51,7 @@ export function Root() {
       editor.idToDom.delete(id);
     };
   }, [id]);
-  // useEffect(() => {
-  //   console.log('useEffect',  document.querySelector('h1').innerText)
-  // })
+
   const onKeyDown = (event: KeyboardEvent) => {
     if (event.metaKey && event.key === "z") {
       editor.history.undo();
@@ -89,7 +59,6 @@ export function Root() {
   };
 
   editor.textPath.length = 0;
-  // console.log({blocks})
   return (
     <div
       id="root"
@@ -104,6 +73,19 @@ export function Root() {
   );
 }
 
+const BlockComponentMap = {
+  hr: Hr,
+  paragraph: Paragraph,
+  list: List,
+  list_item: ListItem,
+  heading: Heading,
+  blockquote: Blockquote,
+  space: () => <></>,
+  text: TextBlock,
+  code: Code,
+  table: Table,
+};
+ 
 export function Block(props) {
   const editor = useEditor()
   const BlockComponent = (BlockComponentMap[props.type]);

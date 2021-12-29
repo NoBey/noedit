@@ -1,5 +1,5 @@
 import React, { forwardRef, LegacyRef } from "react";
-import { InlineText } from ".";
+import { InlineText } from "./inline";
 import { BlockInterface } from "../model";
 // import { editor } from "../editor";
 

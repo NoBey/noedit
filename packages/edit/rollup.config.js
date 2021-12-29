@@ -19,12 +19,12 @@ export default {
     string({
       include: "**/*.md",
     }),
-    commonjs(),
     url(),
     postcss({
       // modules: true,
       inject: true
     }),
+    commonjs(),
     typescript({
       tsconfig: './tsconfig.json',
     }),

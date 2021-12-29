@@ -1,6 +1,6 @@
 import React, { forwardRef } from "react";
 import { BlockInterface } from "../model";
-import { InlineText } from "./";
+import { InlineText } from "./inline";
 
 type Headingtype = `h${[1,2,3,4,5,6][number]}`  // 'h1' | 'h2'| 'h3' | 'h4' | 'h5' | 'h6'
 
