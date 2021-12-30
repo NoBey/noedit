@@ -80,8 +80,6 @@ export const MathCode = ({ text }) => {
     'latex'
   );
 
-
-
   return <>
     {/* <code style={{position: 'absolute',top: 0, pointerEvents: 'none', userSelect: 'none' }} dangerouslySetInnerHTML={{ __html: html }} ></code> */}
     <code dangerouslySetInnerHTML={{ __html: html }}></code>
@@ -98,19 +96,28 @@ export const FlowCode = (props) => {
     Prism.languages.flow,
     'flow'
   );
-  const flow = flowchart.parse(text)
-  const div = document.createElement('div')
-  try {
-    flow.drawSVG(div)
-  } catch (error) {
-    div.innerText = error.message
-  }
+  const ref = useRef()
+  useEffect(() => {
+    
+    const flow = flowchart.parse(text)
+    try {
+      flow.drawSVG(ref.current)
+    } catch (error) {
+      //@ts-ignore
+      ref.current.innerText = error.message
+    }
+
+    return () => flow.clean()
+  }, [text])
+
 
   return <>
-    <Tooltip {...props} editor={editor} />
+    <div style={{ position: 'relative', padding: '10px 0'}}>
+      <Tooltip {...props} editor={editor} />
+      <code dangerouslySetInnerHTML={{ __html: html }}></code>
+    </div>
     {/* <code style={{position: 'absolute',top: 0, pointerEvents: 'none', userSelect: 'none' }} dangerouslySetInnerHTML={{ __html: html }} ></code> */}
-    <code dangerouslySetInnerHTML={{ __html: html }}></code>
-    <div className="block-flow" contentEditable={false} dangerouslySetInnerHTML={{ __html: div.innerHTML }}></div>
+    <div className="block-flow" ref={ref} contentEditable={false}></div>
   </>
 }
 
