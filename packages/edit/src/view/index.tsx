@@ -53,6 +53,11 @@ export function Root() {
   }, [id]);
 
   const onKeyDown = (event: KeyboardEvent) => {
+    if( event.key === 'Tab') {
+      editor.model.insertText('\t')
+      event.preventDefault()
+    }
+    console.log(event.key, event)
     if (event.metaKey && event.key === "z") {
       editor.history.undo();
     }
