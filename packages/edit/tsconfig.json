@@ -21,7 +21,7 @@
     "noUnusedLocals": false,
     "noImplicitAny": false,
     "strict": false,
-    "plugins": [{ "name": "typescript-plugin-css-modules" }],
+    "plugins": [{ "name": "typescript-plugin-css-modules" }, { "transform": "typescript-transform-paths", "afterDeclarations": true }],
   },
   "include": ["src/**/*.d.ts"],
   "exclude": ["node_modules", "dist", "typings", "**/__test__", "test", "docs", "tests", "**/*.bak.ts"]
