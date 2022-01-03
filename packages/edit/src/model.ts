@@ -110,7 +110,7 @@ export class Model {
     const { selection } = this.editor
     const { startContainer, endContainer, startOffset, endOffset } =
     editor.range(range);
-
+//  console.log(range,  editor.range(range))
     if (startContainer === endContainer) {
       if (startOffset === endOffset) return;
       let text = startContainer.text;

@@ -153,8 +153,6 @@ export interface InlineToken {
 }
 
 export const InlineText = React.memo( ({ text, id }: any) => {
-  const editor = useEditor()
-  editor.textPath.push(id);
   const tokens = lex.inlineTokens(text, [])
   if (!text || !tokens.length) return <span><br /></span>
   return (

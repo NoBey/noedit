@@ -63,7 +63,7 @@ export function Root() {
     }
   };
 
-  editor.textPath.length = 0;
+  // editor.textPath.length = 0;
   return (
     <div
       id="root"

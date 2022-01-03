@@ -93,8 +93,19 @@ export class Editor {
   idToBlock: Map<string | number, BlockInterface> = new Map();
   idToDom = new Map();
   DomToBlock = new WeakMap();
-  textPath = []
 
+  get textPath(){
+    const list = []
+    const stack: BlockInterface[] = [this.model._model]
+    while (stack.length) {
+      let block = stack.pop()
+      if( ['paragraph','heading', 'code'].includes(block.type)){
+         list.push(block.id)
+      }
+      stack.push(...([...block.blocks||[]]).reverse())
+    }
+    return list
+  }
 
   constructor() {
     this.history = new History(this);
