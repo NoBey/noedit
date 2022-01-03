@@ -9,6 +9,7 @@ import ts from "rollup-plugin-ts";
 // dependencies
 
 export default {
+  sourceMap: true,
   input: './src/index.tsx',
   external: Object.keys(packageJson.dependencies),
   output: {
@@ -16,7 +17,6 @@ export default {
     format: 'cjs',
   },
   plugins: [
-    nodeResolve(),
     string({
       include: '**/*.md',
     }),
@@ -27,5 +27,6 @@ export default {
     }),
     commonjs(),
     ts({tsconfig: './tsconfig.json'}),
+    // nodeResolve(),
   ],
 };

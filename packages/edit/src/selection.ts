@@ -82,6 +82,19 @@ export class Selection {
     }
   }
 
+  focusTable({ focusNode }) {
+    const {editor } = this
+    const block = editor.domToBlock(focusNode);
+    Array.from(document.querySelectorAll(".md-table-focus")).forEach((dom) => {
+      dom.classList.remove("md-table-focus");
+    });
+    if (block.parent.type === "table") {
+      editor.getDomByid(block.parent.id)?.classList.add("md-table-focus");
+    }
+  }
+
+
+
   change() {
     const { selection, editor } = this;
 
@@ -90,6 +103,7 @@ export class Selection {
     if (selection.type === "Caret") {
       this.focusInline(selection);
       this.focusCode(selection);
+      this.focusTable(selection);
     }
 
     const anchor = editor.fixOffset(

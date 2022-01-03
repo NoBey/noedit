@@ -44,6 +44,7 @@ export function Root() {
 
     editor.idToDom.set(id, ref.current);
     editor.DomToBlock.set(ref.current, editor.idToBlock.get(id));
+    editor.container = ref.current
 
     return () => {
       editor.idToDom.get(id).removeEventListener("beforeinput", editor.onBeforeInput);

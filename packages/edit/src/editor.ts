@@ -93,6 +93,7 @@ export class Editor {
   idToBlock: Map<string | number, BlockInterface> = new Map();
   idToDom = new Map();
   DomToBlock = new WeakMap();
+  container: HTMLDivElement
 
   get textPath(){
     const list = []
