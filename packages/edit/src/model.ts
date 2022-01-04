@@ -15,6 +15,7 @@ export interface BlockInterface {
   text?: string;
   header?: BlockInterface[];
   rows?: BlockInterface[][];
+  align?: ['left', 'center', 'right'][number][];
   depth?: number;
   task?: boolean;
   checked?: boolean;
@@ -51,6 +52,8 @@ export class Model {
     }
     if (block.type === "table") {
       block.blocks = []
+      block.align = new Array(block.header.length).fill(null).map((v, i) =>  block.align[i] || v)
+      // block.align.fill(null)
       block.header.forEach((b) => {
         block.blocks.push(b)
         normalize(b, block)

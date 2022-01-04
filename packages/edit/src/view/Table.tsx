@@ -131,7 +131,7 @@ function ControlLeft({row, col, insertAfterTableRow, insertAfterTableCol, delete
   );
 }
 
-function ControlTop({row, col, insertAfterTableRow, insertAfterTableCol, deleteTableCol }: any) {
+function ControlTop({row, col, setTableAlign, insertAfterTableCol, deleteTableCol }: any) {
   const editor = useEditor();
   const ref = useRef<HTMLDivElement>();
   const [pos, setPos] = useState({ x: 0, y: 0, height: 0, width: 0 });
@@ -165,9 +165,9 @@ function ControlTop({row, col, insertAfterTableRow, insertAfterTableCol, deleteT
               style={{ position: 'absolute', top: scollTop + pos.y, left: pos.x - offsetLeft + (pos.width >> 1) }}
             >
               <Icon size={20} type={'zengjialie'} onClick={() => insertAfterTableCol(col)} />
-              <Icon size={20} type={'youduiqi'} />
-              <Icon size={20} type={'zuoduiqi'} />
-              <Icon size={20} type={'zuoyouduiqi'} />
+              <Icon size={20} type={'zuoduiqi'}  onClick={() => setTableAlign(col, 'left')} />
+              <Icon size={20} type={'zuoyouduiqi'}  onClick={() => setTableAlign(col, 'center')}/>
+              <Icon size={20} type={'youduiqi'} onClick={() => setTableAlign(col, 'right')} />
               <Icon size={20} type={'shanchu'}  onClick={()=> deleteTableCol(col)}/>
             </div>,
             editor.container,
@@ -180,14 +180,14 @@ function ControlTop({row, col, insertAfterTableRow, insertAfterTableCol, deleteT
 
 
 function deleteTableRow(editor: EditorInterface, tableBlock: BlockInterface, index){
-  let header, rows
+  let header = tableBlock.header, rows
   if(index===0){
     header = tableBlock.rows[0]
     rows = [...tableBlock.rows]
     rows.splice(0, 1)
   }else{
     rows = [...tableBlock.rows]
-    rows.splice(index - 1, 1)
+    rows.splice(index - 2, 1)
   }
   editor.model.updateBlock(tableBlock, { header, rows  })
 }
@@ -195,23 +195,29 @@ function deleteTableRow(editor: EditorInterface, tableBlock: BlockInterface, ind
 function deleteTableCol(editor: EditorInterface, tableBlock: BlockInterface, index){
   let header = [...tableBlock.header]
   header.splice(index-1, 1);
+  let align = [...tableBlock.align]
+  align.splice(index-1, 1);
+
   let rows = [...tableBlock.rows].map(row => {
     const r = [...row]
     r.splice(index-1, 1)
     return r
   })
-  editor.model.updateBlock(tableBlock, { header, rows })
+  editor.model.updateBlock(tableBlock, { header, rows, align })
 }
 
 function insertAfterTableCol(editor: EditorInterface, tableBlock: BlockInterface, index){
   let header = [...tableBlock.header]
   header.splice(index, 0, editor.createParagraphBlock());
+  let align = [...tableBlock.align]
+  align.splice(index, 0, null);
+
   let rows = [...tableBlock.rows].map(row => {
      const r = [...row]
     r.splice(index, 0, editor.createParagraphBlock())
     return r
   })
-  editor.model.updateBlock(tableBlock, { header, rows })
+  editor.model.updateBlock(tableBlock, { header, rows, align })
 }
 
 function insertAfterTableRow(editor: EditorInterface, tableBlock: BlockInterface, index: number){
@@ -226,6 +232,11 @@ function insertAfterTableRow(editor: EditorInterface, tableBlock: BlockInterface
   editor.model.updateBlock(tableBlock, { header: tableBlock.header, rows })
 }
 
+function setTableAlign(editor: EditorInterface, tableBlock: BlockInterface, index: number, alignValue: ['left', 'center', 'right'][number]){
+  const align =[...tableBlock?.align]
+  align[index-1] = alignValue
+  editor.model.updateBlock(tableBlock, { align })
+}
 
 
 
@@ -240,6 +251,7 @@ export const Table = forwardRef((props: BlockInterface, ref: LegacyRef<HTMLTable
     insertAfterTableCol: insertAfterTableCol.bind(null, editor, props),
     deleteTableRow: deleteTableRow.bind(null, editor, props),
     deleteTableCol: deleteTableCol.bind(null, editor, props),
+    setTableAlign: setTableAlign.bind(null, editor, props),
   }
 
   return (
@@ -255,6 +267,7 @@ export const Table = forwardRef((props: BlockInterface, ref: LegacyRef<HTMLTable
                   setFocus(col);
                   setPos({ row: 1, col: colIndex + 1 });
                 }}
+                align={ props?.align?.[colIndex] || 'left'}
               >
                 {colIndex === 0 ? <ControlLeft {...crlProps} row={1} col={colIndex + 1}/> : ''}
                 <ControlTop {...crlProps} row={1} col={colIndex + 1} />
@@ -273,6 +286,7 @@ export const Table = forwardRef((props: BlockInterface, ref: LegacyRef<HTMLTable
                     setFocus(col);
                     setPos({ row: rowIndex + 2, col: colIndex + 1 });
                   }}
+                  align={ props?.align?.[colIndex] || 'left'}
                 >
                   {colIndex === 0 ? <ControlLeft  {...crlProps} row={rowIndex + 2} col={colIndex + 1}/> : ''}
                   <Block {...col} />
