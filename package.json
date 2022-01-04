@@ -9,7 +9,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap",
     "build": "lerna run build",
-    "start": "lerna run start --stream",
+    "start": "lerna run start --scope @noedit/* --stream",
     "start:core": "lerna run start --scope @noedit/core --stream",
     "start:example": "lerna run start --scope @noedit/example --stream",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",

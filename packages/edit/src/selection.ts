@@ -93,17 +93,39 @@ export class Selection {
     }
   }
 
+  fixLastLine(){
+    if(this?.focusBlock?.text){
+      const {textPath}  = this.editor
+      if(textPath[textPath.length-1] === this.focusBlock.id){
+        console.log('addLastLine')
+        this.editor.addLastLine()
+      }
+    }
+  }
+
+  scrollIntoViewIfNeeded(){
+    const { selection, editor } = this
+    if(selection.focusNode){
+      const focus = editor.domToBlock(selection.focusNode);
+      if(focus){
+        // console.log('scrollIntoViewIfNeeded',focus.id, focus)
+        // editor.getDomByid(focus.id)?.scrollIntoViewIfNeeded(true) // .scrollIntoView({behavior: "smooth", block: "end" }); 
+      }
+  
+    }
+  }
 
 
   change() {
     const { selection, editor } = this;
-
     console.log("change", selection);
 
     if (selection.type === "Caret") {
       this.focusInline(selection);
       this.focusCode(selection);
       this.focusTable(selection);
+      this.fixLastLine()
+      // this.scrollIntoViewIfNeeded()
     }
 
     const anchor = editor.fixOffset(
@@ -111,6 +133,7 @@ export class Selection {
       selection.anchorOffset
     );
     const focus = editor.fixOffset(selection.focusNode, selection.focusOffset);
+
     if (this.skipSelectionchange) {
       this.skipSelectionchange = false;
       if (this.focusBlock === focus.block) return;
@@ -121,6 +144,7 @@ export class Selection {
     this.focusOffset = focus.offset;
 
     this.type = selection.type;
+  
 
     this.range = null;
     if (selection.type === "Range") {

@@ -4,7 +4,8 @@ import React, {
   KeyboardEvent,
   useEffect,
   ReactNode,
-  useState
+  useState,
+  MouseEventHandler
 } from "react";
 
 // import { InlineText } from "./inline";
@@ -59,10 +60,16 @@ export function Root() {
       event.preventDefault()
     }
     console.log(event.key, event)
+    event.stopPropagation()
     if (event.metaKey && event.key === "z") {
       editor.history.undo();
     }
   };
+
+  const click: MouseEventHandler =(event) => {
+    console.log(event.target)
+    console.log(event)
+  }
 
   // editor.textPath.length = 0;
   return (
@@ -73,6 +80,7 @@ export function Root() {
       suppressContentEditableWarning={true}
       spellCheck={false}
       onKeyDown={onKeyDown}
+      onClick={click}
     >
       <BlockList blocks={blocks} />
     </div>

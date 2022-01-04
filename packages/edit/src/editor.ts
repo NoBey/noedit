@@ -266,7 +266,7 @@ export class Editor {
     }
     return node;
   }
-  createParagraphBlock(text = "") {
+  createParagraphBlock(text = ""): BlockInterface {
     return {
       blocks: [],
       isBlock: true,
@@ -336,6 +336,18 @@ export class Editor {
   isTextBlock(id) {
     const { textPath } = this
     return textPath.includes(id);
+  }
+  addLastLine(){
+    const { textPath } = this
+    let lastBlock = this.getBlockByid(textPath[textPath.length-1])
+    while(lastBlock && lastBlock.parent.type !== 'root'){
+      lastBlock = lastBlock.parent
+    }
+    this.model.insertAfter(lastBlock, this.createParagraphBlock())
+  }
+
+  setMarkDown(md: string = ''){
+    this.model.setModel(parseMD(md))
   }
 }
 

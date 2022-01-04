@@ -22,6 +22,7 @@ export interface BlockInterface {
   ordered?:boolean;
   start?: number;
   raw?: string;
+  isBlock?: boolean;
 }
 
 let index = 0;
@@ -44,6 +45,13 @@ export class Model {
     block.parent = parent;
     if (!block.id) block.id = ++index;
     editor.idToBlock.set(block.id, block);
+
+    if (block.type === "root") {
+      if(!block?.blocks || block.blocks.length === 0){
+        block.blocks = [editor.createParagraphBlock()]
+      }
+    }
+
     block?.blocks?.forEach((b) => normalize(b, block));
     if (["list_item", "blockquote", "list"].includes(block.type)) {
       if (block.blocks.length === 0) {
@@ -66,6 +74,11 @@ export class Model {
       );
     }
     return block;
+  }
+  setModel(_model){
+    this.normalize = this.normalize.bind(this)
+    this._model = this.normalize(_model)
+    Event.emit("model-change", this.editor.model);
   }
 
   onChange(cb) {
