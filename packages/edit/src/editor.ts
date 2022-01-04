@@ -14,6 +14,7 @@ import {
 import { History } from "./history";
 import { iterationTextNode } from "./utils";
 import { marked } from "marked";
+import { clipboard, ClipboardInterface } from "./clipboard";
 
 function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
   const { model, selection } = editor;
@@ -88,6 +89,7 @@ export interface EditorInterface extends Editor {}
 export class Editor {
   model: ModelInterface;
   selection: SelectionInterface;
+  clipboard : ClipboardInterface
   inputStrategys: InputEventStrategy[] = [];
   history: History;
   idToBlock: Map<string | number, BlockInterface> = new Map();
@@ -112,6 +114,7 @@ export class Editor {
     this.history = new History(this);
     this.model = new Model(this, parseMD());
     this.selection = new Selection(this);
+    this.clipboard = new clipboard()
 
     this.inputStrategys.push(new BaseInputEvent(this));
     this.inputStrategys.push(new BlockquoteInputEvent(this));
@@ -135,23 +138,13 @@ export class Editor {
     }
   }
 
-  pasteContnet = [];
   onPaste = (event: ClipboardEvent) => {
     const { clipboardData } = event;
-    console.log("onPaste", event.clipboardData.types);
-    if (clipboardData.types.includes("text/html")) {
-      // this.model.deleteContent()
-      this.pasteContnet = HtmlToModel(clipboardData.getData("text/html"));
-      return;
-    } else if (clipboardData.types.includes("text/plain")) {
-      const text = clipboardData.getData("text/plain")
-      console.log('onPaste', text)
-      this.pasteContnet = parseMD(text).blocks;
-    }
-    // HtmlToModel
+    this.clipboard.addData(clipboardData)
   };
   onBeforeInput = (event: InputEvent) => {
     const { inputType } = event;
+    console.log({inputType})
     // if(this.selection.focusBlock.type === "code") return
     if (
       this.isComposing ||
