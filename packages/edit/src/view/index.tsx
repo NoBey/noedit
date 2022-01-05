@@ -37,6 +37,7 @@ export function Root() {
     ref.current.addEventListener("beforeinput", editor.onBeforeInput);
     ref.current.addEventListener("paste", editor.onPaste);
     ref.current.addEventListener("compositionstart", editor.onCompositionstart);
+    ref.current.addEventListener("keydown", editor.onKeyDown);
     ref.current.addEventListener(
       "compositionupdate",
       editor.onCompositionupdate
@@ -54,17 +55,7 @@ export function Root() {
     };
   }, [id]);
 
-  const onKeyDown = (event: KeyboardEvent) => {
-    if( event.key === 'Tab') {
-      editor.model.insertText('\t')
-      event.preventDefault()
-    }
-    console.log(event.key, event)
-    event.stopPropagation()
-    if (event.metaKey && event.key === "z") {
-      editor.history.undo();
-    }
-  };
+
 
   const click: MouseEventHandler =(event) => {
     console.log(event.target)
@@ -79,7 +70,7 @@ export function Root() {
       contentEditable
       suppressContentEditableWarning={true}
       spellCheck={false}
-      onKeyDown={onKeyDown}
+      // onKeyDown={onKeyDown}
       onClick={click}
     >
       <BlockList blocks={blocks} />

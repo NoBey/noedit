@@ -206,6 +206,33 @@ export class Editor {
     this.model.insertText(event.data);
   };
 
+  onKeyDown = (event: KeyboardEvent) => { 
+      if( event.key === 'Tab') {
+        this.tabKeyDown(event)
+        event.preventDefault()
+      }
+      console.log(event.key, event)
+      event.stopPropagation()
+      if (event.metaKey && event.key === "z") {
+        this.history.undo();
+      }
+  }
+
+  tabKeyDown = ({shiftKey}) => {
+    const preTextBlock = this.getPreviousTextBlock(this.selection.focusBlock.id)
+    const isList = preTextBlock.parent.type === 'list_item'
+    if(shiftKey){
+      if(isList){
+
+      }
+    }else{
+      if(isList){
+        
+      }else{
+        this.model.insertText('\t')
+      }
+    }
+  }
 
   domToBlock(domNode) {
     const { DomToBlock } = this
