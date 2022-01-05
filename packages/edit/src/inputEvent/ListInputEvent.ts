@@ -56,7 +56,10 @@ export class ListInputEvent implements InputEventStrategy {
     }
     if (inputType === "insertParagraph") {
       if (focusBlock.parent.blocks.indexOf(focusBlock) === 0) {
+
         if (focusBlock.text === "" && focusBlock.parent.blocks.length === 1) {
+
+          // list 最后一个退出
           if (
             focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) ===
             focusBlock.parent.parent.blocks.length - 1
@@ -65,6 +68,15 @@ export class ListInputEvent implements InputEventStrategy {
             editor.model.insertAfter(focusBlock.parent.parent, focusBlock);
             return;
           }
+
+          // 切割 list
+          if ( focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) !== 0 ){
+            editor.model.splitList(focusBlock.parent.parent, focusBlock.parent.parent.blocks.indexOf(focusBlock.parent))
+            editor.model.deleteBlock(focusBlock.parent.id)
+            editor.model.insertAfter(focusBlock.parent.parent, focusBlock);
+            return
+          } 
+
         }
 
         const newBlock = editor.createListItemBlock(
@@ -78,6 +90,7 @@ export class ListInputEvent implements InputEventStrategy {
         selection.collapse(focusBlock);
       }
 
+      // item 内部跳出
       if (
         focusBlock.text === "" &&
         focusBlock.parent.blocks.indexOf(focusBlock) + 1 ===

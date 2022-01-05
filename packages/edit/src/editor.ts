@@ -219,19 +219,28 @@ export class Editor {
   }
 
   tabKeyDown = ({shiftKey}) => {
-    const preTextBlock = this.getPreviousTextBlock(this.selection.focusBlock.id)
-    const isList = preTextBlock.parent.type === 'list_item'
+    const { focusBlock } = this.selection
+    const preTextBlock = this.getPreviousTextBlock(focusBlock.id)
+
     if(shiftKey){
-      if(isList){
+      if(focusBlock.parent.type === 'list_item' && focusBlock.parent.parent.parent.type === 'list_item'){
+        this.model.deleteBlock(focusBlock.parent.id)
+        // this.model.splitList(focusBlock.parent.parent, focusBlock.parent.parent.blocks.indexOf(focusBlock.parent))
+        this.model.insertAfter(focusBlock.parent.parent.parent, focusBlock.parent)
+        // this.model.insertAfter(focusBlock, this.getNextBlock(focusBlock.parent)) 
 
       }
     }else{
-      if(isList){
-        
-      }else{
-        this.model.insertText('\t')
+      if(focusBlock.parent.type === 'list_item' && preTextBlock.parent.type === 'list_item'){
+        if(focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) !== 0 && focusBlock.parent.blocks.indexOf(focusBlock) === 0){
+          this.model.deleteBlock(focusBlock.parent.id)
+          this.model.insertAfter(preTextBlock, this.createListBlock(null, focusBlock.parent.parent.ordered, 1, [focusBlock.parent]))
+          return 
+        }
       }
+      this.model.insertText('\t')
     }
+   
   }
 
   domToBlock(domNode) {
@@ -311,25 +320,25 @@ export class Editor {
   createCodeBlock(lang = "", text = "") {
     return { lang, raw: "", text, type: "code" };
   }
-  createBlockquoteBlock(block) {
+  createBlockquoteBlock(block, blocks = [block]) {
     return {
-      blocks: [block],
+      blocks,
       isBlock: true,
       type: "blockquote",
     };
   }
-  createListItemBlock(block, task = false, checked = false) {
+  createListItemBlock(block, task = false, checked = false, blocks = [block]) {
     return {
-      blocks: [block],
+      blocks,
       isBlock: true,
       task,
       checked,
       type: "list_item",
     };
   }
-  createListBlock(block, ordered = false, start = 1) {
+  createListBlock(block, ordered = false, start = 1, blocks: BlockInterface[] = [this.createListItemBlock(block)]) {
     return {
-      blocks: [this.createListItemBlock(block)],
+      blocks,
       isBlock: true,
       type: "list",
       ordered: ordered,
@@ -360,6 +369,7 @@ export class Editor {
     let index = textPath.indexOf(id);
     return this.getBlockByid(index === textPath.length - 1 ? id : textPath[index + 1]);
   }
+
   isTextBlock(id) {
     const { textPath } = this
     return textPath.includes(id);

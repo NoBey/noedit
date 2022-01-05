@@ -25,9 +25,10 @@ export class BlockquoteInputEvent implements InputEventStrategy {
         focusBlock.text === "" &&
         inputType === "insertParagraph" &&
         focusBlock.parent.type === "blockquote" &&
-        focusBlock.parent.blocks.indexOf(focusBlock) + 1 === focusBlock.parent.blocks.length
+        selection.type === "Caret"
       ) {
-        return true
+        //focusBlock.parent.blocks.indexOf(focusBlock) + 1 === focusBlock.parent.blocks.length
+        return true 
       }
   
       return false;
@@ -50,10 +51,27 @@ export class BlockquoteInputEvent implements InputEventStrategy {
         focusBlock.text === "" &&
         inputType === "insertParagraph" &&
         focusBlock.parent.type === "blockquote" &&
-        focusBlock.parent.blocks.indexOf(focusBlock) + 1 === focusBlock.parent.blocks.length
+        selection.type === "Caret"
       ) {
+        // 首行退出
+        if(focusBlock.parent.blocks.indexOf(focusBlock) === 0){
+          editor.model.deleteBlock(focusBlock.id)
+          editor.model.insertBefore(focusBlock.parent, focusBlock)
+          return
+        }
+
+        // 尾部退出
+        if(focusBlock.parent.blocks.indexOf(focusBlock) + 1 === focusBlock.parent.blocks.length){
+          editor.model.deleteBlock(focusBlock.id)
+          editor.model.insertAfter(focusBlock.parent, focusBlock)
+          return
+        }
+
+        // 分割
+        editor.model.splitBlockquote(focusBlock.parent, focusBlock.parent.blocks.indexOf(focusBlock))
         editor.model.deleteBlock(focusBlock.id)
         editor.model.insertAfter(focusBlock.parent, focusBlock)
+
         return 
       }
     }

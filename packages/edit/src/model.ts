@@ -282,5 +282,20 @@ export class Model {
     const blocks = [...targetBlock.blocks, ...block.blocks];
     this.applyOperation(createUpdateOperation(this.editor, targetBlock.id, { blocks }));
   }
+  splitList(listBlock: BlockInterface, index: number){
+    const { editor } = this
+    const newBlocks = listBlock.blocks.slice(index+1)
+    this.updateBlock(listBlock, { blocks: listBlock.blocks.slice(0, index + 1) })
+    const newList = editor.createListBlock(null, listBlock.ordered, 1, newBlocks)
+    this.insertAfter(listBlock, newList)
+  }
+  splitBlockquote(block: BlockInterface, index: number){
+    const { editor } = this
+    const newBlocks = block.blocks.slice(index+1)
+    this.updateBlock(block, { blocks: block.blocks.slice(0, index + 1) })
+    const newList = editor.createBlockquoteBlock(null, newBlocks)
+    this.insertAfter(block, newList)
+  }
+
 
 }
