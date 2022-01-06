@@ -12,6 +12,7 @@
     "start": "lerna run start --scope @noedit/* --stream",
     "start:core": "lerna run start --scope @noedit/core --stream",
     "start:example": "lerna run start --scope @noedit/example --stream",
+    "build:test": "lerna run build-test --scope @noedit/example --stream",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest"
   },
