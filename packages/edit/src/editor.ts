@@ -1,7 +1,7 @@
 import { Selection, SelectionInterface } from "./selection";
 // import { BlockUtil } from "./block"; 
 import { BlockInterface, Model, ModelInterface } from "./model";
-import { HtmlToModel, parseMD } from "./parse";
+import { HtmlToModel, modelToMD, parseMD } from "./parse";
 import { Event } from "./Event";
 import {
   BaseInputEvent,
@@ -218,17 +218,33 @@ export class Editor {
       }
   }
 
-  tabKeyDown = ({shiftKey}) => {
+  tabKeyDown = ({shiftKey}: KeyboardEvent) => {
     const { focusBlock } = this.selection
     const preTextBlock = this.getPreviousTextBlock(focusBlock.id)
 
     if(shiftKey){
-      if(focusBlock.parent.type === 'list_item' && focusBlock.parent.parent.parent.type === 'list_item'){
-        this.model.deleteBlock(focusBlock.parent.id)
-        // this.model.splitList(focusBlock.parent.parent, focusBlock.parent.parent.blocks.indexOf(focusBlock.parent))
-        this.model.insertAfter(focusBlock.parent.parent.parent, focusBlock.parent)
-        // this.model.insertAfter(focusBlock, this.getNextBlock(focusBlock.parent)) 
-
+      if(focusBlock.parent.type === 'list_item' && focusBlock.parent.parent.parent.type === 'list_item' ){
+        // this.model.deleteBlock(focusBlock.parent.id)
+        
+        if(focusBlock.parent.blocks.indexOf(focusBlock) === 0) {
+          const itemIndex = focusBlock.parent.parent.blocks.indexOf(focusBlock.parent)
+          if(itemIndex === 0 && focusBlock.parent.parent.parent.blocks.indexOf(focusBlock.parent.parent) === 0 ){
+            this.model.deleteBlock(focusBlock.parent.id)
+            this.model.insertBefore(focusBlock.parent.parent.parent, focusBlock.parent)
+            return
+          }
+          const nextList = this.createListBlock(null, focusBlock.parent.parent.ordered, 1, focusBlock.parent.parent.blocks.slice(itemIndex+1))
+          this.model.updateBlock(focusBlock.parent.parent, {blocks: focusBlock.parent.parent.blocks.slice(0, itemIndex)})
+          this.model.insertAfter(focusBlock.parent.parent.parent, focusBlock.parent)
+          this.model.insertAfter(focusBlock, nextList) 
+        }else{
+          // listitem 非首行退出
+          // const index = focusBlock.parent.blocks.indexOf(focusBlock)
+          // const blocks = focusBlock.parent.blocks.slice(index)
+          // this.model.updateBlock(focusBlock.parent, {blocks: focusBlock.parent.blocks.slice(0, index)})
+          return 
+        }
+     
       }
     }else{
       if(focusBlock.parent.type === 'list_item' && preTextBlock.parent.type === 'list_item'){
@@ -385,6 +401,9 @@ export class Editor {
 
   setMarkDown(md: string = ''){
     this.model.setModel(parseMD(md))
+  }
+  toMDString(){
+   return modelToMD(this.model._model)
   }
 }
 

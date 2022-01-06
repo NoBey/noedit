@@ -38,7 +38,7 @@ export class Model {
     
     this.normalize = this.normalize.bind(this)
     this._model = this.normalize(_model)
-  }
+  } 
   normalize(block: BlockInterface, parent?: BlockInterface) {
     const { editor, normalize } = this
 
@@ -160,7 +160,7 @@ export class Model {
       let flag = false;
       while (stack.length) {
         const block = stack.pop();
-        [...(block.blocks || [])].reverse().forEach((b) => {
+        [...(block?.blocks || [])].reverse().forEach((b) => {
           stack.push(b);
         });
         if (flag && (editor.isTextBlock(block.id) || block.type === "hr" || block.type === "table")) {
