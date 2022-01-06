@@ -23,7 +23,7 @@ export function createUpdateOperation(editor, id, arg) {
   const _arg = {}
   const keys = Object.keys(arg)
   const block = editor.getBlockByid(id)
-  keys.forEach(k => _arg[k] = block[k])
+  keys.forEach(k => _arg[k] = block?.[k] || undefined )
 
   const invert = () => {
     return createOperation(editor, "update", { id, ..._arg })
