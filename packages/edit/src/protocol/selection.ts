@@ -1,13 +1,13 @@
 // import { BlockUtil } from "./block";
-import { openTooltip } from "./component";
-import { EditorInterface } from "./editor";
-import { BlockInterface } from "./model";
-import { getKatexHtml, iterationTextNode } from "./utils";
+import { openTooltip } from '../component';
+import { EditorInterface } from './editor';
+import { BlockInterface } from './model';
+import { getKatexHtml, iterationTextNode } from '../utils';
 
 export interface SelectionInterface extends Selection {}
 
 export class Selection {
-  editor: EditorInterface
+  editor: EditorInterface;
   selection = window.getSelection();
   anchorBlock?: BlockInterface;
   anchorOffset?: number;
@@ -15,7 +15,7 @@ export class Selection {
   focusBlock?: BlockInterface;
   commonAncestor?: BlockInterface;
   range: Range = null;
-  type = "None";
+  type = 'None';
   startContainer?: BlockInterface;
   endContainer?: BlockInterface;
   startOffset?: number;
@@ -23,8 +23,8 @@ export class Selection {
   skipSelectionchange = false;
 
   constructor(editor) {
-    this.editor = editor
-    document.addEventListener("selectionchange", this.change.bind(this));
+    this.editor = editor;
+    document.addEventListener('selectionchange', this.change.bind(this));
   }
 
   collapse(block, offset = 0) {
@@ -36,12 +36,11 @@ export class Selection {
 
   reset() {
     let { focusBlock, focusOffset, editor } = this;
-    if (this.type === "None") return;
+    if (this.type === 'None') return;
     this.skipSelectionchange = true;
     const dom = editor.getDomByid(focusBlock.id);
     let offset = focusOffset;
     for (let tnode of iterationTextNode(dom)) {
-
       if (tnode.length >= offset) {
         return this.selection.collapse(tnode, offset);
       } else {
@@ -49,89 +48,83 @@ export class Selection {
       }
     }
     const text = editor.getTextByid(focusBlock.id);
-    if (text?.nodeName === "#text" && focusOffset > text.length)
-      focusOffset = text.length;
+    if (text?.nodeName === '#text' && focusOffset > text.length) focusOffset = text.length;
     this.selection.collapse(text, focusOffset);
   }
   focusInline({ focusNode }) {
-    Array.from(document.querySelectorAll(".inline-focus")).forEach((dom) => {
-      dom.classList.remove("inline-focus");
+    Array.from(document.querySelectorAll('.inline-focus')).forEach((dom) => {
+      dom.classList.remove('inline-focus');
     });
 
     let node = focusNode;
     while (node && !node?.dataset?.type) {
-      if(node?.classList?.contains('inline-math')){
-        const text = node.querySelector('.inline-meta').innerText
-        text && openTooltip(node, getKatexHtml(text))
+      if (node?.classList?.contains('inline-math')) {
+        const text = node.querySelector('.inline-meta').innerText;
+        text && openTooltip(node, getKatexHtml(text));
       }
-      if (node?.classList?.contains("inline")) {
-        node?.classList.add("inline-focus");
+      if (node?.classList?.contains('inline')) {
+        node?.classList.add('inline-focus');
       }
       node = node.parentElement;
     }
   }
   focusCode({ focusNode }) {
-    const {editor } = this
+    const { editor } = this;
     const block = editor.domToBlock(focusNode);
-    Array.from(document.querySelectorAll(".md-code-focus")).forEach((dom) => {
-      dom.classList.remove("md-code-focus");
+    Array.from(document.querySelectorAll('.md-code-focus')).forEach((dom) => {
+      dom.classList.remove('md-code-focus');
     });
-    if (block.type === "code") {
-      console.log("code");
-      editor.getDomByid(block.id)?.classList.add("md-code-focus");
+    if (block.type === 'code') {
+      console.log('code');
+      editor.getDomByid(block.id)?.classList.add('md-code-focus');
     }
   }
 
   focusTable({ focusNode }) {
-    const {editor } = this
+    const { editor } = this;
     const block = editor.domToBlock(focusNode);
-    Array.from(document.querySelectorAll(".md-table-focus")).forEach((dom) => {
-      dom.classList.remove("md-table-focus");
+    Array.from(document.querySelectorAll('.md-table-focus')).forEach((dom) => {
+      dom.classList.remove('md-table-focus');
     });
-    if (block.parent.type === "table") {
-      editor.getDomByid(block.parent.id)?.classList.add("md-table-focus");
+    if (block.parent.type === 'table') {
+      editor.getDomByid(block.parent.id)?.classList.add('md-table-focus');
     }
   }
 
-  fixLastLine(){
-    if(this?.focusBlock?.text){
-      const {textPath}  = this.editor
-      if(textPath[textPath.length-1] === this.focusBlock.id){
-        console.log('addLastLine')
-        this.editor.addLastLine()
+  fixLastLine() {
+    if (this?.focusBlock?.text) {
+      const { textPath } = this.editor;
+      if (textPath[textPath.length - 1] === this.focusBlock.id) {
+        console.log('addLastLine');
+        this.editor.addLastLine();
       }
     }
   }
 
-  scrollIntoViewIfNeeded(){
-    const { selection, editor } = this
-    if(selection.focusNode){
+  scrollIntoViewIfNeeded() {
+    const { selection, editor } = this;
+    if (selection.focusNode) {
       const focus = editor.domToBlock(selection.focusNode);
-      if(focus){
+      if (focus) {
         // console.log('scrollIntoViewIfNeeded',focus.id, focus)
-        // editor.getDomByid(focus.id)?.scrollIntoViewIfNeeded(true) // .scrollIntoView({behavior: "smooth", block: "end" }); 
+        // editor.getDomByid(focus.id)?.scrollIntoViewIfNeeded(true) // .scrollIntoView({behavior: "smooth", block: "end" });
       }
-  
     }
   }
-
 
   change() {
     const { selection, editor } = this;
-    console.log("change", selection);
+    console.log('change', selection);
 
-    if (selection.type === "Caret") {
+    if (selection.type === 'Caret') {
       this.focusInline(selection);
       this.focusCode(selection);
       this.focusTable(selection);
-      this.fixLastLine()
+      this.fixLastLine();
       // this.scrollIntoViewIfNeeded()
     }
 
-    const anchor = editor.fixOffset(
-      selection.anchorNode,
-      selection.anchorOffset
-    );
+    const anchor = editor.fixOffset(selection.anchorNode, selection.anchorOffset);
     const focus = editor.fixOffset(selection.focusNode, selection.focusOffset);
 
     if (this.skipSelectionchange) {
@@ -144,13 +137,11 @@ export class Selection {
     this.focusOffset = focus.offset;
 
     this.type = selection.type;
-  
 
     this.range = null;
-    if (selection.type === "Range") {
+    if (selection.type === 'Range') {
       const _range = selection.getRangeAt(0);
-      const { startContainer, startOffset, endContainer, endOffset } =
-      editor.range(_range);
+      const { startContainer, startOffset, endContainer, endOffset } = editor.range(_range);
       this.range = _range;
       this.startOffset = startOffset;
       this.endOffset = endOffset;

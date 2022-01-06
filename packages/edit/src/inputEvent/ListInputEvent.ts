@@ -1,34 +1,33 @@
 // import { BlockUtil } from "../block";
-import { InputEventStrategy } from ".";
-import { EditorInterface } from "../editor";
+import { InputEventStrategy } from '.';
+import { EditorInterface } from '../protocol/editor';
 
 export class ListInputEvent implements InputEventStrategy {
-  editor: EditorInterface
+  editor: EditorInterface;
   constructor(editor: EditorInterface) {
-    this.editor = editor
+    this.editor = editor;
   }
   accept(inputType: string, event?: InputEvent): boolean {
-    const { editor } = this
-    const { selection } = editor
+    const { editor } = this;
+    const { selection } = editor;
     const { focusOffset, focusBlock } = selection;
     if (
       focusOffset === 0 &&
-      inputType.startsWith("delete") &&
-      focusBlock.parent.type === "list_item" &&
+      inputType.startsWith('delete') &&
+      focusBlock.parent.type === 'list_item' &&
       focusBlock.parent.blocks.indexOf(focusBlock) === 0 &&
-      selection.type === "Caret" &&
+      selection.type === 'Caret' &&
       focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) !== 0
     ) {
       return true;
     }
 
     if (
-      inputType === "insertParagraph" &&
-      selection.type === "Caret" &&
-      focusBlock.parent.type === "list_item" &&
-      ((focusBlock.parent.blocks.indexOf(focusBlock) + 1 ===
-        focusBlock.parent.blocks.length &&
-        focusBlock.text === "") ||
+      inputType === 'insertParagraph' &&
+      selection.type === 'Caret' &&
+      focusBlock.parent.type === 'list_item' &&
+      ((focusBlock.parent.blocks.indexOf(focusBlock) + 1 === focusBlock.parent.blocks.length &&
+        focusBlock.text === '') ||
         focusBlock.parent.blocks.indexOf(focusBlock) === 0)
     ) {
       return true;
@@ -37,28 +36,26 @@ export class ListInputEvent implements InputEventStrategy {
     return false;
   }
   execute(inputType: string, event?: InputEvent): void {
-    const { editor } = this
-    const { selection } = editor
+    const { editor } = this;
+    const { selection } = editor;
     const { focusOffset, focusBlock } = selection;
     if (
       focusOffset === 0 &&
-      inputType.startsWith("delete") &&
-      focusBlock.parent.type === "list_item" &&
+      inputType.startsWith('delete') &&
+      focusBlock.parent.type === 'list_item' &&
       focusBlock.parent.blocks.indexOf(focusBlock) === 0 &&
-      selection.type === "Caret"
+      selection.type === 'Caret'
     ) {
       const preBlock = editor.getPreviousBlock(focusBlock.parent);
-      if (preBlock.blocks.length === 1 && preBlock.blocks[0].text === "") {
+      if (preBlock.blocks.length === 1 && preBlock.blocks[0].text === '') {
         editor.model.deleteBlock(preBlock.blocks[0].id);
       }
       editor.model.mergeBlock(preBlock, focusBlock.parent);
       editor.model.deleteBlock(focusBlock.parent.id);
     }
-    if (inputType === "insertParagraph") {
+    if (inputType === 'insertParagraph') {
       if (focusBlock.parent.blocks.indexOf(focusBlock) === 0) {
-
-        if (focusBlock.text === "" && focusBlock.parent.blocks.length === 1) {
-
+        if (focusBlock.text === '' && focusBlock.parent.blocks.length === 1) {
           // list 最后一个退出
           if (
             focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) ===
@@ -70,19 +67,21 @@ export class ListInputEvent implements InputEventStrategy {
           }
 
           // 切割 list
-          if ( focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) !== 0 ){
-            editor.model.splitList(focusBlock.parent.parent, focusBlock.parent.parent.blocks.indexOf(focusBlock.parent))
-            editor.model.deleteBlock(focusBlock.parent.id)
+          if (focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) !== 0) {
+            editor.model.splitList(
+              focusBlock.parent.parent,
+              focusBlock.parent.parent.blocks.indexOf(focusBlock.parent),
+            );
+            editor.model.deleteBlock(focusBlock.parent.id);
             editor.model.insertAfter(focusBlock.parent.parent, focusBlock);
-            return
-          } 
-
+            return;
+          }
         }
 
         const newBlock = editor.createListItemBlock(
           editor.createParagraphBlock(focusBlock.text.slice(0, focusOffset)),
           focusBlock.parent.task,
-          focusBlock.parent.checked
+          focusBlock.parent.checked,
         );
         const text = focusBlock.text.slice(focusOffset);
         editor.model.updateBlock(focusBlock, { text });
@@ -92,17 +91,12 @@ export class ListInputEvent implements InputEventStrategy {
 
       // item 内部跳出
       if (
-        focusBlock.text === "" &&
-        focusBlock.parent.blocks.indexOf(focusBlock) + 1 ===
-          focusBlock.parent.blocks.length
+        focusBlock.text === '' &&
+        focusBlock.parent.blocks.indexOf(focusBlock) + 1 === focusBlock.parent.blocks.length
       ) {
         editor.model.insertAfter(
           focusBlock.parent,
-          editor.createListItemBlock(
-            focusBlock,
-            focusBlock.parent.task,
-            focusBlock.parent.checked
-          )
+          editor.createListItemBlock(focusBlock, focusBlock.parent.task, focusBlock.parent.checked),
         );
         editor.model.deleteBlock(focusBlock.id);
       }

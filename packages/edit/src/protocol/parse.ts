@@ -1,19 +1,19 @@
-import { marked } from "marked";
-import TurndownService from "turndown";
-import test from "./test1.md";
-import katex from "katex";
+import { marked } from 'marked';
+import TurndownService from 'turndown';
+import test from '../test1.md';
+import katex from 'katex';
 
 const blockMath = {
-  name: "block-math",
-  level: "block",
+  name: 'block-math',
+  level: 'block',
   tokenizer(src, tokens) {
     const rule = /^(\${2})\s*([\s\S]*?[^\$])\s*\1(?!\$)/; //
     const match = rule.exec(src);
     if (match) {
       return {
-        type: "code",
+        type: 'code',
         // type: 'inline-math',
-        lang: "math",
+        lang: 'math',
         raw: match[0],
         text: match[2],
       };
@@ -35,8 +35,8 @@ const blockMath = {
 };
 
 const inlineMath = {
-  name: "inline-math",
-  level: "inline",
+  name: 'inline-math',
+  level: 'inline',
   tokenizer(src, tokens) {
     const rule = /\$(.*?)\$/; //
     const match = rule.exec(src);
@@ -44,13 +44,13 @@ const inlineMath = {
       if (match.index === 0) {
         if (!match[1].trim()) {
           return {
-            type: "text",
+            type: 'text',
             raw: match[0],
             text: match[0],
           };
         }
         return {
-          type: "inline-math",
+          type: 'inline-math',
           raw: match[0],
           text: match[1],
         };
@@ -90,41 +90,31 @@ ${test}
 
 function formatBlock(token) {
   if (
-    [
-      "blockquote",
-      "heading",
-      "list",
-      "list_item",
-      "paragraph",
-      "hr",
-      "code",
-      "table",
-      "space"
-    ].includes(token.type)
+    ['blockquote', 'heading', 'list', 'list_item', 'paragraph', 'hr', 'code', 'table', 'space'].includes(token.type)
   ) {
-    if ("space" === token.type){
-      return { type: "paragraph", blocks:[], text: "", isBlock: true}
+    if ('space' === token.type) {
+      return { type: 'paragraph', blocks: [], text: '', isBlock: true };
     }
     const block = { blocks: [], ...token, isBlock: true };
-    if (block.type === "list_item") {
-      if (block?.tokens[0] && block?.tokens[0].type === "text") {
-        block.tokens[0].type = "paragraph";
+    if (block.type === 'list_item') {
+      if (block?.tokens[0] && block?.tokens[0].type === 'text') {
+        block.tokens[0].type = 'paragraph';
       }
     }
 
     if (block?.tokens?.length) {
       block.blocks = block?.tokens.map(formatBlock).filter((n) => n);
     }
-    if (block.type === "list") {
+    if (block.type === 'list') {
       if (block?.items?.length === 0) return;
       block.blocks = block?.items.map(formatBlock).filter((n) => n);
     }
-    if (block.type === "table") {
+    if (block.type === 'table') {
       block.header.forEach((b) => {
-        b.type = "paragraph";
+        b.type = 'paragraph';
       });
       block.rows.flat(99).forEach((b) => {
-        b.type = "paragraph";
+        b.type = 'paragraph';
       });
     }
 
@@ -132,72 +122,77 @@ function formatBlock(token) {
   }
 }
 // @ts-ignore
-window.parseMD = parseMD
+window.parseMD = parseMD;
 export function parseMD(md = defaultTxt) {
   const tokens = marked.lexer(md); // new marked.Lexer({ breaks: true }).lex(md);
   console.log(tokens);
   return {
-    type: "root",
+    type: 'root',
     blocks: tokens.map(formatBlock).filter((n) => n),
   };
 }
 
 // @ts-ignore
-window.modelToMD = modelToMD
-export function modelToMD(model){
+window.modelToMD = modelToMD;
+export function modelToMD(model) {
   // if(model.type === 'root')
-  return model.blocks.map((block) => blockToMD(block)).join('\n')
+  return model.blocks.map((block) => blockToMD(block)).join('\n');
 }
 
-
-function headDepth(depth){
-  return new Array(depth).fill('#').join('')
+function headDepth(depth) {
+  return new Array(depth).fill('#').join('');
 }
 
-function listDepth(depth){
-  console.log({depth})
-  return new Array(depth * 2).fill(' ').join('')
+function listDepth(depth) {
+  console.log({ depth });
+  return new Array(depth * 2).fill(' ').join('');
 }
 
-function tableAlign(align){
-  if(align === "center") return ":--:"
-  if(align === "right") return "---:"
-  if(align === "left") return ":---"
-  return '----'
+function tableAlign(align) {
+  if (align === 'center') return ':--:';
+  if (align === 'right') return '---:';
+  if (align === 'left') return ':---';
+  return '----';
 }
 
-export function blockToMD(block, listIndex = 0){
-  const { type, text, blocks = []} = block
-  const childMD = blocks.map(block => blockToMD(block))
-  if(type === 'paragraph') return text
-  if(type === 'heading') return `${headDepth(block.depth)} ${text}` 
-  if(type === 'blockquote') return childMD.map(md => `> ${md}`).join('\n')
-  if(type === 'hr') return '---\n'
-  if(type === 'list_item') {
-    const { task, checked } = block
-    return '- ' + (task ? `[${checked ? 'x' : ' '}] ` : "" )+ childMD.join('\n').split('\n').join('\n' + '  ')
+export function blockToMD(block, listIndex = 0) {
+  const { type, text, blocks = [] } = block;
+  const childMD = blocks.map((block) => blockToMD(block));
+  if (type === 'paragraph') return text;
+  if (type === 'heading') return `${headDepth(block.depth)} ${text}`;
+  if (type === 'blockquote') return childMD.map((md) => `> ${md}`).join('\n');
+  if (type === 'hr') return '---\n';
+  if (type === 'list_item') {
+    const { task, checked } = block;
+    return (
+      '- ' +
+      (task ? `[${checked ? 'x' : ' '}] ` : '') +
+      childMD
+        .join('\n')
+        .split('\n')
+        .join('\n' + '  ')
+    );
   }
 
-  if(type === 'list') {
-    const { ordered, start = 1} = block
-    if(ordered){
-      return childMD.map((md, i) => `${start + i}. ${md.slice(2)}`).join('\n')
+  if (type === 'list') {
+    const { ordered, start = 1 } = block;
+    if (ordered) {
+      return childMD.map((md, i) => `${start + i}. ${md.slice(2)}`).join('\n');
     }
-    return childMD.map(md => `${md}`).join('\n')
+    return childMD.map((md) => `${md}`).join('\n');
   }
-  if(type === 'code') {
-    return '```' + block.lang + '\n' + text + '\n```'
+  if (type === 'code') {
+    return '```' + block.lang + '\n' + text + '\n```';
   }
-  if(type === 'table') {
-    const { header = [], rows, align } = block
-    let html =  `| ${header.map(blockToMD).join(' | ')} |\n`
-    html +=  `| ${align.map(tableAlign).join(' | ')} |\n`
-    rows.forEach(row => {
-      html +=  `| ${row.map(blockToMD).join(' | ')} |\n`
+  if (type === 'table') {
+    const { header = [], rows, align } = block;
+    let html = `| ${header.map(blockToMD).join(' | ')} |\n`;
+    html += `| ${align.map(tableAlign).join(' | ')} |\n`;
+    rows.forEach((row) => {
+      html += `| ${row.map(blockToMD).join(' | ')} |\n`;
     });
-    return html
+    return html;
   }
-
 }
 
 // function normalize(block, parent) {

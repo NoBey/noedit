@@ -1,7 +1,7 @@
 // import hotkeys from "hotkeys-js"
 
-import { Editor } from "./editor";
-import { BlockInterface } from "./model";
+import { Editor } from './editor';
+import { BlockInterface } from './model';
 
 export interface Record {
   ops: any[];
@@ -22,11 +22,11 @@ export class History {
     this.undoStack.push(record);
   }
   undo() {
-    const { editor } = this
-    console.log("undo");
+    const { editor } = this;
+    console.log('undo');
     if (this.undoStack.length === 0) return;
     const record = this.undoStack.pop();
-    if (record.type === "Range") {
+    if (record.type === 'Range') {
       editor.selection.selection.addRange(record.range.cloneRange());
     } else {
       editor.selection.collapse(record.focusBlock, record.focusOffset);

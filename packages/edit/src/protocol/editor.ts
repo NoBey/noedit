@@ -1,8 +1,8 @@
-import { Selection, SelectionInterface } from "./selection";
-// import { BlockUtil } from "./block"; 
-import { BlockInterface, Model, ModelInterface } from "./model";
-import { HtmlToModel, modelToMD, parseMD } from "./parse";
-import { Event } from "./Event";
+import { Selection, SelectionInterface } from './selection';
+// import { BlockUtil } from "./block";
+import { BlockInterface, Model, ModelInterface } from './model';
+import { HtmlToModel, modelToMD, parseMD } from './parse';
+
 import {
   BaseInputEvent,
   BlockquoteInputEvent,
@@ -10,15 +10,17 @@ import {
   ListInputEvent,
   CodeInputEvent,
   TableInputEvent,
-} from "./inputEvent";
-import { History } from "./history";
-import { iterationTextNode } from "./utils";
-import { marked } from "marked";
-import { clipboard, ClipboardInterface } from "./clipboard";
+} from '../inputEvent';
+import { History } from './history';
+import { iterationTextNode } from '../utils';
+import { marked } from 'marked';
+import { clipboard, ClipboardInterface } from './clipboard';
+import EventEmitter from 'eventemitter3';
+import Context from './context';
 
 function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
   const { model, selection } = editor;
-  if (block.type === "heading" || block.type === "paragraph") {
+  if (block.type === 'heading' || block.type === 'paragraph') {
     // heading
     if (/^(#+)\s(.*)/.test(block.text)) {
       const newBlock = editor.createHeading(block.text);
@@ -28,12 +30,12 @@ function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
     }
 
     if (/^[+]{0,1}(\d+)\.\s/.test(block.text)) {
-      const start = block.text.split(".")[0];
+      const start = block.text.split('.')[0];
       const newBlock = editor.createListBlock(block, true, Number(start));
       // block.text = block.text.replace("- ", "");
       selection.focusOffset -= start.length + 1;
       model.updateBlock(block, {
-        text: block.text.replace(/^[+]{0,1}(\d+)\.\s/, ""),
+        text: block.text.replace(/^[+]{0,1}(\d+)\.\s/, ''),
       });
       model.replaceBlock(block, newBlock);
       selection.collapse(newBlock);
@@ -44,44 +46,40 @@ function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
       const newBlock = editor.createListBlock(block);
       // block.text = block.text.replace("- ", "");
       selection.focusOffset -= 2;
-      model.updateBlock(block, { text: block.text.replace("- ", "") });
+      model.updateBlock(block, { text: block.text.replace('- ', '') });
       model.replaceBlock(block, newBlock);
       selection.collapse(newBlock);
     }
     // quote
-    if (block.text.startsWith("> ")) {
+    if (block.text.startsWith('> ')) {
       const newBlock = editor.createBlockquoteBlock(block);
       selection.focusOffset -= 2;
-      model.updateBlock(block, { text: block.text.replace("> ", "") });
+      model.updateBlock(block, { text: block.text.replace('> ', '') });
       model.replaceBlock(block, newBlock);
       selection.collapse(newBlock);
     }
 
     // hr
-    if (block.text.startsWith("---")) {
+    if (block.text.startsWith('---')) {
       selection.collapse(editor.getNextTextBlock(block.id));
       model.replaceBlock(block, editor.createHrBlock());
     }
 
     // task
     if (/^\[[\s,x]\]/.test(block.text)) {
-      if (
-        block.parent.type === "list_item" &&
-        block.parent.blocks.indexOf(block) === 0
-      ) {
+      if (block.parent.type === 'list_item' && block.parent.blocks.indexOf(block) === 0) {
         selection.focusOffset -= 2;
         model.updateBlock(block.parent, {
           task: true,
-          checked: block.text.startsWith("[x]"),
+          checked: block.text.startsWith('[x]'),
         });
         model.updateBlock(block, {
-          text: block.text.replace(/^\[[\s,x]\]/, ""),
+          text: block.text.replace(/^\[[\s,x]\]/, ''),
         });
       }
     }
   }
 }
-
 
 //\\
 export interface EditorInterface extends Editor {}
@@ -89,32 +87,37 @@ export interface EditorInterface extends Editor {}
 export class Editor {
   model: ModelInterface;
   selection: SelectionInterface;
-  clipboard : ClipboardInterface
+  clipboard: ClipboardInterface;
   inputStrategys: InputEventStrategy[] = [];
   history: History;
   idToBlock: Map<string | number, BlockInterface> = new Map();
   idToDom = new Map();
   DomToBlock = new WeakMap();
-  container: HTMLDivElement
+  container: HTMLDivElement;
+  public eventCenter: EventEmitter;
+  public context: Context;
 
-  get textPath(){
-    const list = []
-    const stack: BlockInterface[] = [this.model._model]
+  get textPath() {
+    const list = [];
+    const stack: BlockInterface[] = [this.model._model];
     while (stack.length) {
-      let block = stack.pop()
-      if( ['paragraph','heading', 'code'].includes(block.type)){
-         list.push(block.id)
+      let block = stack.pop();
+      if (['paragraph', 'heading', 'code'].includes(block.type)) {
+        list.push(block.id);
       }
-      stack.push(...([...block.blocks||[]]).reverse())
+      stack.push(...[...(block.blocks || [])].reverse());
     }
-    return list
+    return list;
   }
 
   constructor() {
+    this.eventCenter = new EventEmitter();
+    this.context = new Context(this, this.eventCenter);
+
     this.history = new History(this);
     this.model = new Model(this, parseMD());
     this.selection = new Selection(this);
-    this.clipboard = new clipboard()
+    this.clipboard = new clipboard();
 
     this.inputStrategys.push(new BaseInputEvent(this));
     this.inputStrategys.push(new BlockquoteInputEvent(this));
@@ -122,11 +125,11 @@ export class Editor {
     this.inputStrategys.push(new CodeInputEvent(this));
     this.inputStrategys.push(new TableInputEvent(this));
 
-    Event.on("block-change", this.blockChange.bind(this));
+    this.eventCenter.on('block-change', this.blockChange.bind(this));
   }
 
   blockChange(block: BlockInterface) {
-    if(block?.parent?.type !== 'table') ConvertBlock(this, block);
+    if (block?.parent?.type !== 'table') ConvertBlock(this, block);
   }
   applyInputStrategys(inputType: string, Event: InputEvent) {
     const strategys = [...this.inputStrategys];
@@ -140,28 +143,21 @@ export class Editor {
 
   onPaste = (event: ClipboardEvent) => {
     const { clipboardData } = event;
-    this.clipboard.addData(clipboardData)
+    this.clipboard.addData(clipboardData);
   };
   onBeforeInput = (event: InputEvent) => {
     const { inputType } = event;
-    console.log({inputType})
+    console.log({ inputType });
     // if(this.selection.focusBlock.type === "code") return
-    if (
-      this.isComposing ||
-      inputType === "insertCompositionText" ||
-      inputType === "deleteCompositionText"
-    ) {
+    if (this.isComposing || inputType === 'insertCompositionText' || inputType === 'deleteCompositionText') {
       return;
     }
-    if (inputType === "insertParagraph") {
+    if (inputType === 'insertParagraph') {
       // insertParagraph 之后
       const { focusBlock } = this.selection;
 
-      if (
-        focusBlock.text.trimEnd() === "$$" &&
-        focusBlock.type === "paragraph"
-      ) {
-        const newBlock = this.createCodeBlock( "math", "");
+      if (focusBlock.text.trimEnd() === '$$' && focusBlock.type === 'paragraph') {
+        const newBlock = this.createCodeBlock('math', '');
         this.model.replaceBlock(focusBlock, newBlock);
 
         this.selection.collapse(newBlock);
@@ -170,13 +166,8 @@ export class Editor {
         return;
       }
 
-      if (
-        /^\`{3,10}/.test(focusBlock.text) &&
-        focusBlock.type === "paragraph"
-      ) {
-        const newBlock = this.createCodeBlock(
-          focusBlock.text.replace(/^\`{3,10}/, "")
-        );
+      if (/^\`{3,10}/.test(focusBlock.text) && focusBlock.type === 'paragraph') {
+        const newBlock = this.createCodeBlock(focusBlock.text.replace(/^\`{3,10}/, ''));
         this.model.replaceBlock(focusBlock, newBlock);
 
         this.selection.collapse(newBlock);
@@ -201,73 +192,84 @@ export class Editor {
   onCompositionupdate = () => {};
   onCompositionend = (event: CompositionEvent) => {
     this.isComposing = false;
-    console.log("onDomCompositionend", event.data);
+    console.log('onDomCompositionend', event.data);
     this.selection.focusOffset = this.compositionOffset;
     this.model.insertText(event.data);
   };
 
-  onKeyDown = (event: KeyboardEvent) => { 
-      if( event.key === 'Tab') {
-        this.tabKeyDown(event)
-        event.preventDefault()
-      }
-      console.log(event.key, event)
-      event.stopPropagation()
-      if (event.metaKey && event.key === "z") {
-        this.history.undo();
-      }
-  }
+  onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === 'Tab') {
+      this.tabKeyDown(event);
+      event.preventDefault();
+    }
+    console.log(event.key, event);
+    event.stopPropagation();
+    if (event.metaKey && event.key === 'z') {
+      this.history.undo();
+    }
+  };
 
-  tabKeyDown = ({shiftKey}: KeyboardEvent) => {
-    const { focusBlock } = this.selection
-    const preTextBlock = this.getPreviousTextBlock(focusBlock.id)
+  tabKeyDown = ({ shiftKey }: KeyboardEvent) => {
+    const { focusBlock } = this.selection;
+    const preTextBlock = this.getPreviousTextBlock(focusBlock.id);
 
-    if(shiftKey){
-      if(focusBlock.parent.type === 'list_item' && focusBlock.parent.parent.parent.type === 'list_item' ){
+    if (shiftKey) {
+      if (focusBlock.parent.type === 'list_item' && focusBlock.parent.parent.parent.type === 'list_item') {
         // this.model.deleteBlock(focusBlock.parent.id)
-        
-        if(focusBlock.parent.blocks.indexOf(focusBlock) === 0) {
-          const itemIndex = focusBlock.parent.parent.blocks.indexOf(focusBlock.parent)
-          if(itemIndex === 0 && focusBlock.parent.parent.parent.blocks.indexOf(focusBlock.parent.parent) === 0 ){
-            this.model.deleteBlock(focusBlock.parent.id)
-            this.model.insertBefore(focusBlock.parent.parent.parent, focusBlock.parent)
-            return
+
+        if (focusBlock.parent.blocks.indexOf(focusBlock) === 0) {
+          const itemIndex = focusBlock.parent.parent.blocks.indexOf(focusBlock.parent);
+          if (itemIndex === 0 && focusBlock.parent.parent.parent.blocks.indexOf(focusBlock.parent.parent) === 0) {
+            this.model.deleteBlock(focusBlock.parent.id);
+            this.model.insertBefore(focusBlock.parent.parent.parent, focusBlock.parent);
+            return;
           }
-          const nextList = this.createListBlock(null, focusBlock.parent.parent.ordered, 1, focusBlock.parent.parent.blocks.slice(itemIndex+1))
-          this.model.updateBlock(focusBlock.parent.parent, {blocks: focusBlock.parent.parent.blocks.slice(0, itemIndex)})
-          this.model.insertAfter(focusBlock.parent.parent.parent, focusBlock.parent)
-          this.model.insertAfter(focusBlock, nextList) 
-        }else{
+          const nextList = this.createListBlock(
+            null,
+            focusBlock.parent.parent.ordered,
+            1,
+            focusBlock.parent.parent.blocks.slice(itemIndex + 1),
+          );
+          this.model.updateBlock(focusBlock.parent.parent, {
+            blocks: focusBlock.parent.parent.blocks.slice(0, itemIndex),
+          });
+          this.model.insertAfter(focusBlock.parent.parent.parent, focusBlock.parent);
+          this.model.insertAfter(focusBlock, nextList);
+        } else {
           // listitem 非首行退出
           // const index = focusBlock.parent.blocks.indexOf(focusBlock)
           // const blocks = focusBlock.parent.blocks.slice(index)
           // this.model.updateBlock(focusBlock.parent, {blocks: focusBlock.parent.blocks.slice(0, index)})
-          return 
-        }
-     
-      }
-    }else{
-      if(focusBlock.parent.type === 'list_item' && preTextBlock.parent.type === 'list_item'){
-        if(focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) !== 0 && focusBlock.parent.blocks.indexOf(focusBlock) === 0){
-          this.model.deleteBlock(focusBlock.parent.id)
-          this.model.insertAfter(preTextBlock, this.createListBlock(null, focusBlock.parent.parent.ordered, 1, [focusBlock.parent]))
-          return 
+          return;
         }
       }
-      this.model.insertText('\t')
+    } else {
+      if (focusBlock.parent.type === 'list_item' && preTextBlock.parent.type === 'list_item') {
+        if (
+          focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) !== 0 &&
+          focusBlock.parent.blocks.indexOf(focusBlock) === 0
+        ) {
+          this.model.deleteBlock(focusBlock.parent.id);
+          this.model.insertAfter(
+            preTextBlock,
+            this.createListBlock(null, focusBlock.parent.parent.ordered, 1, [focusBlock.parent]),
+          );
+          return;
+        }
+      }
+      this.model.insertText('\t');
     }
-   
-  }
+  };
 
   domToBlock(domNode) {
-    const { DomToBlock } = this
+    const { DomToBlock } = this;
     while (domNode && !DomToBlock.get(domNode)) {
       domNode = domNode.parentNode;
     }
     return DomToBlock.get(domNode);
   }
   fixOffset(node: Node, offset: number = 0) {
-    const { DomToBlock } = this
+    const { DomToBlock } = this;
     let parent = node;
     while (parent && !DomToBlock.get(parent)) parent = parent.parentNode;
     if (parent === node) return { node, offset, block: DomToBlock.get(node) };
@@ -296,7 +298,7 @@ export class Editor {
     return false;
   }
 
-  getCommonBlock(block1?: BlockInterface, block2?: BlockInterface){
+  getCommonBlock(block1?: BlockInterface, block2?: BlockInterface) {
     if (!block1 || !block2) return null;
     if (this.contains(block1, block2)) {
       return block1;
@@ -304,43 +306,43 @@ export class Editor {
       return this.getCommonBlock(block1.parent, block2); // 递归的使用
     }
   }
-  getDomByid (id){
-    return  this.idToDom.get(id)
+  getDomByid(id) {
+    return this.idToDom.get(id);
   }
-  getBlockByid(id): BlockInterface{
-    return this.idToBlock.get(id)
+  getBlockByid(id): BlockInterface {
+    return this.idToBlock.get(id);
   }
 
-  getTextByid(id)  {
+  getTextByid(id) {
     let node = this.idToDom.get(id);
-    while (node && !["#text", "BR"].includes(node.nodeName)) {
+    while (node && !['#text', 'BR'].includes(node.nodeName)) {
       node = node.firstChild;
     }
     return node;
   }
-  createParagraphBlock(text = ""): BlockInterface {
+  createParagraphBlock(text = ''): BlockInterface {
     return {
       blocks: [],
       isBlock: true,
       text,
-      type: "paragraph",
+      type: 'paragraph',
     };
   }
-  createHrBlock(text = "") {
+  createHrBlock(text = '') {
     return {
       blocks: [],
       isBlock: true,
-      type: "hr",
+      type: 'hr',
     };
   }
-  createCodeBlock(lang = "", text = "") {
-    return { lang, raw: "", text, type: "code" };
+  createCodeBlock(lang = '', text = '') {
+    return { lang, raw: '', text, type: 'code' };
   }
   createBlockquoteBlock(block, blocks = [block]) {
     return {
       blocks,
       isBlock: true,
-      type: "blockquote",
+      type: 'blockquote',
     };
   }
   createListItemBlock(block, task = false, checked = false, blocks = [block]) {
@@ -349,19 +351,19 @@ export class Editor {
       isBlock: true,
       task,
       checked,
-      type: "list_item",
+      type: 'list_item',
     };
   }
   createListBlock(block, ordered = false, start = 1, blocks: BlockInterface[] = [this.createListItemBlock(block)]) {
     return {
       blocks,
       isBlock: true,
-      type: "list",
+      type: 'list',
       ordered: ordered,
       start,
     };
   }
-  createHeading(text = "# ") {
+  createHeading(text = '# ') {
     return { ...marked.lexer(text)[0], blocks: [] } as BlockInterface;
   }
   getPreviousBlock(block: BlockInterface) {
@@ -376,34 +378,34 @@ export class Editor {
       : block.parent.blocks[index + 1];
   }
   getPreviousTextBlock(id) {
-    const { textPath } = this
+    const { textPath } = this;
     let index = textPath.indexOf(id);
     return this.getBlockByid(index === 0 ? id : textPath[index - 1]);
   }
   getNextTextBlock(id) {
-    const { textPath } = this
+    const { textPath } = this;
     let index = textPath.indexOf(id);
     return this.getBlockByid(index === textPath.length - 1 ? id : textPath[index + 1]);
   }
 
   isTextBlock(id) {
-    const { textPath } = this
+    const { textPath } = this;
     return textPath.includes(id);
   }
-  addLastLine(){
-    const { textPath } = this
-    let lastBlock = this.getBlockByid(textPath[textPath.length-1])
-    while(lastBlock && lastBlock.parent.type !== 'root'){
-      lastBlock = lastBlock.parent
+  addLastLine() {
+    const { textPath } = this;
+    let lastBlock = this.getBlockByid(textPath[textPath.length - 1]);
+    while (lastBlock && lastBlock.parent.type !== 'root') {
+      lastBlock = lastBlock.parent;
     }
-    this.model.insertAfter(lastBlock, this.createParagraphBlock())
+    this.model.insertAfter(lastBlock, this.createParagraphBlock());
   }
 
-  setMarkDown(md: string = ''){
-    this.model.setModel(parseMD(md))
+  setMarkDown(md: string = '') {
+    this.model.setModel(parseMD(md));
   }
-  toMDString(){
-   return modelToMD(this.model._model)
+  toMDString() {
+    return modelToMD(this.model._model);
   }
 }
 

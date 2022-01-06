@@ -1,11 +1,11 @@
 import React, { forwardRef, LegacyRef, MouseEventHandler, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { BlockInterface } from '../model';
+import { BlockInterface } from '../protocol/model';
 import { Block } from './';
 import { Icon } from '@noedit/icon';
 // import { Popper } from '@noedit/component';
 import { createPortal } from 'react-dom';
 import { useEditor } from '../hooks/useEditor';
-import { EditorInterface } from '../editor';
+import { EditorInterface } from '../protocol/editor';
 
 const Cells = () => {
   const [size, setSize] = useState([3, 4]);
@@ -86,7 +86,7 @@ const TableTools = () => {
   );
 };
 
-function ControlLeft({row, col, insertAfterTableRow, insertAfterTableCol, deleteTableRow }: any) {
+function ControlLeft({ row, col, insertAfterTableRow, insertAfterTableCol, deleteTableRow }: any) {
   const editor = useEditor();
   const ref = useRef<HTMLDivElement>();
   const [pos, setPos] = useState({ x: 0, y: 0, width: 0 });
@@ -119,9 +119,13 @@ function ControlLeft({row, col, insertAfterTableRow, insertAfterTableCol, delete
               onClick={(e) => e.nativeEvent.stopPropagation()}
               style={{ position: 'absolute', top: scollTop + pos.y, left: pos.width >> 1 }}
             >
-              <Icon size={20} type={'zengjiahang'} onClick={() => {
-                insertAfterTableRow(row)
-              }} />
+              <Icon
+                size={20}
+                type={'zengjiahang'}
+                onClick={() => {
+                  insertAfterTableRow(row);
+                }}
+              />
               <Icon size={20} type={'shanchu'} onClick={() => deleteTableRow(row)} />
             </div>,
             editor.container,
@@ -131,7 +135,7 @@ function ControlLeft({row, col, insertAfterTableRow, insertAfterTableCol, delete
   );
 }
 
-function ControlTop({row, col, setTableAlign, insertAfterTableCol, deleteTableCol }: any) {
+function ControlTop({ row, col, setTableAlign, insertAfterTableCol, deleteTableCol }: any) {
   const editor = useEditor();
   const ref = useRef<HTMLDivElement>();
   const [pos, setPos] = useState({ x: 0, y: 0, height: 0, width: 0 });
@@ -165,10 +169,10 @@ function ControlTop({row, col, setTableAlign, insertAfterTableCol, deleteTableCo
               style={{ position: 'absolute', top: scollTop + pos.y, left: pos.x - offsetLeft + (pos.width >> 1) }}
             >
               <Icon size={20} type={'zengjialie'} onClick={() => insertAfterTableCol(col)} />
-              <Icon size={20} type={'zuoduiqi'}  onClick={() => setTableAlign(col, 'left')} />
-              <Icon size={20} type={'zuoyouduiqi'}  onClick={() => setTableAlign(col, 'center')}/>
+              <Icon size={20} type={'zuoduiqi'} onClick={() => setTableAlign(col, 'left')} />
+              <Icon size={20} type={'zuoyouduiqi'} onClick={() => setTableAlign(col, 'center')} />
               <Icon size={20} type={'youduiqi'} onClick={() => setTableAlign(col, 'right')} />
-              <Icon size={20} type={'shanchu'}  onClick={()=> deleteTableCol(col)}/>
+              <Icon size={20} type={'shanchu'} onClick={() => deleteTableCol(col)} />
             </div>,
             editor.container,
           )
@@ -177,69 +181,70 @@ function ControlTop({row, col, setTableAlign, insertAfterTableCol, deleteTableCo
   );
 }
 
-
-
-function deleteTableRow(editor: EditorInterface, tableBlock: BlockInterface, index){
-  let header = tableBlock.header, rows
-  if(index===0){
-    header = tableBlock.rows[0]
-    rows = [...tableBlock.rows]
-    rows.splice(0, 1)
-  }else{
-    rows = [...tableBlock.rows]
-    rows.splice(index - 2, 1)
+function deleteTableRow(editor: EditorInterface, tableBlock: BlockInterface, index) {
+  let header = tableBlock.header,
+    rows;
+  if (index === 0) {
+    header = tableBlock.rows[0];
+    rows = [...tableBlock.rows];
+    rows.splice(0, 1);
+  } else {
+    rows = [...tableBlock.rows];
+    rows.splice(index - 2, 1);
   }
-  editor.model.updateBlock(tableBlock, { header, rows  })
+  editor.model.updateBlock(tableBlock, { header, rows });
 }
 
-function deleteTableCol(editor: EditorInterface, tableBlock: BlockInterface, index){
-  let header = [...tableBlock.header]
-  header.splice(index-1, 1);
-  let align = [...tableBlock.align]
-  align.splice(index-1, 1);
+function deleteTableCol(editor: EditorInterface, tableBlock: BlockInterface, index) {
+  let header = [...tableBlock.header];
+  header.splice(index - 1, 1);
+  let align = [...tableBlock.align];
+  align.splice(index - 1, 1);
 
-  let rows = [...tableBlock.rows].map(row => {
-    const r = [...row]
-    r.splice(index-1, 1)
-    return r
-  })
-  editor.model.updateBlock(tableBlock, { header, rows, align })
+  let rows = [...tableBlock.rows].map((row) => {
+    const r = [...row];
+    r.splice(index - 1, 1);
+    return r;
+  });
+  editor.model.updateBlock(tableBlock, { header, rows, align });
 }
 
-function insertAfterTableCol(editor: EditorInterface, tableBlock: BlockInterface, index){
-  let header = [...tableBlock.header]
+function insertAfterTableCol(editor: EditorInterface, tableBlock: BlockInterface, index) {
+  let header = [...tableBlock.header];
   header.splice(index, 0, editor.createParagraphBlock());
-  let align = [...tableBlock.align]
+  let align = [...tableBlock.align];
   align.splice(index, 0, null);
 
-  let rows = [...tableBlock.rows].map(row => {
-     const r = [...row]
-    r.splice(index, 0, editor.createParagraphBlock())
-    return r
-  })
-  editor.model.updateBlock(tableBlock, { header, rows, align })
+  let rows = [...tableBlock.rows].map((row) => {
+    const r = [...row];
+    r.splice(index, 0, editor.createParagraphBlock());
+    return r;
+  });
+  editor.model.updateBlock(tableBlock, { header, rows, align });
 }
 
-function insertAfterTableRow(editor: EditorInterface, tableBlock: BlockInterface, index: number){
-  let header, rows
-  const row = new Array(tableBlock.header.length).fill(1).map(() => editor.createParagraphBlock())
-  if(index===0){
-    rows = [row, ...tableBlock.rows]
-  }else{
-    rows = [...tableBlock.rows]
-    rows.splice(index - 1, 0, row)
+function insertAfterTableRow(editor: EditorInterface, tableBlock: BlockInterface, index: number) {
+  let header, rows;
+  const row = new Array(tableBlock.header.length).fill(1).map(() => editor.createParagraphBlock());
+  if (index === 0) {
+    rows = [row, ...tableBlock.rows];
+  } else {
+    rows = [...tableBlock.rows];
+    rows.splice(index - 1, 0, row);
   }
-  editor.model.updateBlock(tableBlock, { header: tableBlock.header, rows })
+  editor.model.updateBlock(tableBlock, { header: tableBlock.header, rows });
 }
 
-function setTableAlign(editor: EditorInterface, tableBlock: BlockInterface, index: number, alignValue: ['left', 'center', 'right'][number]){
-  const align =[...tableBlock?.align]
-  align[index-1] = alignValue
-  editor.model.updateBlock(tableBlock, { align })
+function setTableAlign(
+  editor: EditorInterface,
+  tableBlock: BlockInterface,
+  index: number,
+  alignValue: ['left', 'center', 'right'][number],
+) {
+  const align = [...tableBlock?.align];
+  align[index - 1] = alignValue;
+  editor.model.updateBlock(tableBlock, { align });
 }
-
-
-
 
 export const Table = forwardRef((props: BlockInterface, ref: LegacyRef<HTMLTableElement>) => {
   const [focus, setFocus] = useState({});
@@ -252,7 +257,7 @@ export const Table = forwardRef((props: BlockInterface, ref: LegacyRef<HTMLTable
     deleteTableRow: deleteTableRow.bind(null, editor, props),
     deleteTableCol: deleteTableCol.bind(null, editor, props),
     setTableAlign: setTableAlign.bind(null, editor, props),
-  }
+  };
 
   return (
     <div ref={ref} className="md-table">
@@ -267,9 +272,9 @@ export const Table = forwardRef((props: BlockInterface, ref: LegacyRef<HTMLTable
                   setFocus(col);
                   setPos({ row: 1, col: colIndex + 1 });
                 }}
-                align={ props?.align?.[colIndex] || 'left'}
+                align={props?.align?.[colIndex] || 'left'}
               >
-                {colIndex === 0 ? <ControlLeft {...crlProps} row={1} col={colIndex + 1}/> : ''}
+                {colIndex === 0 ? <ControlLeft {...crlProps} row={1} col={colIndex + 1} /> : ''}
                 <ControlTop {...crlProps} row={1} col={colIndex + 1} />
                 <Block {...col} />
               </th>
@@ -286,9 +291,9 @@ export const Table = forwardRef((props: BlockInterface, ref: LegacyRef<HTMLTable
                     setFocus(col);
                     setPos({ row: rowIndex + 2, col: colIndex + 1 });
                   }}
-                  align={ props?.align?.[colIndex] || 'left'}
+                  align={props?.align?.[colIndex] || 'left'}
                 >
-                  {colIndex === 0 ? <ControlLeft  {...crlProps} row={rowIndex + 2} col={colIndex + 1}/> : ''}
+                  {colIndex === 0 ? <ControlLeft {...crlProps} row={rowIndex + 2} col={colIndex + 1} /> : ''}
                   <Block {...col} />
                 </td>
               ))}

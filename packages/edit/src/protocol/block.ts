@@ -1,9 +1,9 @@
 // import { idToDom, DomToBlock } from "./view";
-import { BlockInterface } from "./model";
+import { BlockInterface } from './model';
 // import { path } from "./view";
 // import { editor } from "./editor";
-import { iterationTextNode } from "./utils";
-import { marked } from "marked";
+import { iterationTextNode } from '../utils';
+import { marked } from 'marked';
 
 // interface Range {
 //   collapsed: boolean;
@@ -12,7 +12,6 @@ import { marked } from "marked";
 //   startContainer: HTMLElement;
 //   startOffset: number;
 // }
-
 
 // function createBlockUtil(editor, )
 
@@ -137,4 +136,3 @@ import { marked } from "marked";
 //     return path.includes(id);
 //   },
 // };
-
