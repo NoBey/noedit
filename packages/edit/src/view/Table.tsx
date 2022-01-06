@@ -181,7 +181,7 @@ function ControlTop({row, col, setTableAlign, insertAfterTableCol, deleteTableCo
 
 function deleteTableRow(editor: EditorInterface, tableBlock: BlockInterface, index){
   let header = tableBlock.header, rows
-  if(index===0){
+  if(index===1){
     header = tableBlock.rows[0]
     rows = [...tableBlock.rows]
     rows.splice(0, 1)
@@ -257,12 +257,15 @@ export const Table = forwardRef((props: BlockInterface, ref: LegacyRef<HTMLTable
   return (
     <div ref={ref} className="md-table">
       <TableTools />
-      <table>
+      <table >
         <thead>
           <tr>
             {props.header.map((col, colIndex) => (
               <th
                 key={colIndex}
+                onKeyDown={(e) => {
+                  console.log(e)
+                }}
                 onClick={() => {
                   setFocus(col);
                   setPos({ row: 1, col: colIndex + 1 });

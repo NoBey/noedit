@@ -1,5 +1,6 @@
 import katex from 'katex'
 import "katex/dist/katex.css";
+import { BlockInterface } from './model';
 
 export function *iterationTextNode(dom: Node): Iterable<Text> {
     if(!dom) return dom
@@ -14,6 +15,17 @@ export function *iterationTextNode(dom: Node): Iterable<Text> {
     }
 }
 
+export function *iterationTextBlock(block: BlockInterface): Iterable<BlockInterface> {
+  if(!block) return 
+  const stack = [block]
+  while (stack.length) {
+    let block = stack.pop()
+    if(['paragraph','heading', 'code'].includes(block.type)){
+        yield block 
+    }
+    stack.push(...Array.from(block?.blocks || []).reverse())
+  }
+}
 export function getKatexHtml(text){
   return katex.renderToString(
     text,
@@ -26,4 +38,8 @@ export function getKatexElm(elm, text){
     text, elm, 
     { throwOnError: false }
   )
+}
+
+export async function fileToBlob(file){
+  return new Blob([new Uint8Array(await file.arrayBuffer())], {type: file.type });
 }

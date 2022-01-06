@@ -79,6 +79,7 @@ function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
         });
       }
     }
+
   }
 }
 
@@ -114,7 +115,7 @@ export class Editor {
     this.history = new History(this);
     this.model = new Model(this, parseMD());
     this.selection = new Selection(this);
-    this.clipboard = new clipboard()
+    this.clipboard = new clipboard(this)
 
     this.inputStrategys.push(new BaseInputEvent(this));
     this.inputStrategys.push(new BlockquoteInputEvent(this));
@@ -142,6 +143,51 @@ export class Editor {
     const { clipboardData } = event;
     this.clipboard.addData(clipboardData)
   };
+
+  // onEnter
+  insertParagraphBefore(event){
+    const { selection, model } = this;
+    const { focusBlock } = selection;
+
+    if (
+      focusBlock.text.trimEnd() === "$$" &&
+      focusBlock.type === "paragraph"
+    ) {
+      const newBlock = this.createCodeBlock( "math", "");
+      model.replaceBlock(focusBlock, newBlock);
+
+      selection.collapse(newBlock);
+      event.preventDefault();
+
+      return true;
+    }
+
+    if (
+      /^\`{3,10}/.test(focusBlock.text) &&
+      focusBlock.type === "paragraph"
+    ) {
+      const newBlock = this.createCodeBlock(
+        focusBlock.text.replace(/^\`{3,10}/, "")
+      );
+      model.replaceBlock(focusBlock, newBlock);
+
+      selection.collapse(newBlock);
+      event.preventDefault();
+
+      return true;
+    }
+
+    // table
+    const tableMatch = /^\|.*?(\\*)\|.*?(\\*)\|$/.exec(focusBlock.text)
+    if(tableMatch){
+      const preTextBlock = this.getPreviousTextBlock(focusBlock.id)
+      const tableBlock = this.createTable(tableMatch[0].split('|').length - 2)
+      model.replaceBlock(focusBlock, tableBlock);
+      selection.collapse(tableBlock.header[0]);
+      event.preventDefault();
+      return true
+    }
+  }
   onBeforeInput = (event: InputEvent) => {
     const { inputType } = event;
     console.log({inputType})
@@ -153,37 +199,9 @@ export class Editor {
     ) {
       return;
     }
-    if (inputType === "insertParagraph") {
-      // insertParagraph 之后
-      const { focusBlock } = this.selection;
-
-      if (
-        focusBlock.text.trimEnd() === "$$" &&
-        focusBlock.type === "paragraph"
-      ) {
-        const newBlock = this.createCodeBlock( "math", "");
-        this.model.replaceBlock(focusBlock, newBlock);
-
-        this.selection.collapse(newBlock);
-        event.preventDefault();
-
-        return;
-      }
-
-      if (
-        /^\`{3,10}/.test(focusBlock.text) &&
-        focusBlock.type === "paragraph"
-      ) {
-        const newBlock = this.createCodeBlock(
-          focusBlock.text.replace(/^\`{3,10}/, "")
-        );
-        this.model.replaceBlock(focusBlock, newBlock);
-
-        this.selection.collapse(newBlock);
-        event.preventDefault();
-
-        return;
-      }
+    if (inputType === "insertParagraph" && this.insertParagraphBefore(event)) {
+      // insertParagraph 之前
+      return
     }
     // console.log('onPaste', event.dataTransfer )
     this.applyInputStrategys(inputType, event);
@@ -207,6 +225,7 @@ export class Editor {
   };
 
   onKeyDown = (event: KeyboardEvent) => { 
+
       if( event.key === 'Tab') {
         this.tabKeyDown(event)
         event.preventDefault()
@@ -216,47 +235,94 @@ export class Editor {
       if (event.metaKey && event.key === "z") {
         this.history.undo();
       }
+      if(['[',']'].includes(event.key) && event.metaKey){
+        event.preventDefault()
+        if(event.key === '[') this.listShrink()
+        else this.listExpand()
+      }
+ 
+     if(this.onKeyDownInTable(event)) return
+
+  }
+
+  onKeyDownInTable = (event: KeyboardEvent) => {
+    const { selection } = this
+    const { focusBlock } = selection
+    if(focusBlock?.parent?.type === 'table'){
+      const rowLen = focusBlock.parent.header.length
+      const i = focusBlock.parent.blocks.indexOf(focusBlock)
+      if(event.key === "Backspace" && event.metaKey && event.shiftKey){
+        event.preventDefault()
+        this.deleteTableRow(focusBlock?.parent, Math.ceil( (i+1) / rowLen))
+        selection.collapse(focusBlock.parent.blocks[i] || focusBlock.parent.blocks[i - rowLen])  
+      }
+      if(event.key === 'Enter') {
+        if(event.metaKey){
+          this.insertAfterTableRow(focusBlock?.parent, Math.ceil( (i+1) / rowLen))
+          selection.collapse(focusBlock.parent.blocks[Math.ceil( (i+1) / rowLen) * rowLen])  
+        }else{
+          selection.collapse(focusBlock.parent.blocks[i+rowLen] || this.getNextBlock(focusBlock.parent))  
+          selection.reset()
+        }
+      }
+      
+      return true
+    }
   }
 
   tabKeyDown = ({shiftKey}: KeyboardEvent) => {
     const { focusBlock } = this.selection
-    const preTextBlock = this.getPreviousTextBlock(focusBlock.id)
 
     if(shiftKey){
-      if(focusBlock.parent.type === 'list_item' && focusBlock.parent.parent.parent.type === 'list_item' ){
-        // this.model.deleteBlock(focusBlock.parent.id)
-        
-        if(focusBlock.parent.blocks.indexOf(focusBlock) === 0) {
-          const itemIndex = focusBlock.parent.parent.blocks.indexOf(focusBlock.parent)
-          if(itemIndex === 0 && focusBlock.parent.parent.parent.blocks.indexOf(focusBlock.parent.parent) === 0 ){
-            this.model.deleteBlock(focusBlock.parent.id)
-            this.model.insertBefore(focusBlock.parent.parent.parent, focusBlock.parent)
-            return
-          }
-          const nextList = this.createListBlock(null, focusBlock.parent.parent.ordered, 1, focusBlock.parent.parent.blocks.slice(itemIndex+1))
-          this.model.updateBlock(focusBlock.parent.parent, {blocks: focusBlock.parent.parent.blocks.slice(0, itemIndex)})
-          this.model.insertAfter(focusBlock.parent.parent.parent, focusBlock.parent)
-          this.model.insertAfter(focusBlock, nextList) 
-        }else{
-          // listitem 非首行退出
-          // const index = focusBlock.parent.blocks.indexOf(focusBlock)
-          // const blocks = focusBlock.parent.blocks.slice(index)
-          // this.model.updateBlock(focusBlock.parent, {blocks: focusBlock.parent.blocks.slice(0, index)})
-          return 
-        }
-     
-      }
+      this.listShrink()
     }else{
-      if(focusBlock.parent.type === 'list_item' && preTextBlock.parent.type === 'list_item'){
-        if(focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) !== 0 && focusBlock.parent.blocks.indexOf(focusBlock) === 0){
-          this.model.deleteBlock(focusBlock.parent.id)
-          this.model.insertAfter(preTextBlock, this.createListBlock(null, focusBlock.parent.parent.ordered, 1, [focusBlock.parent]))
-          return 
-        }
-      }
+      if(this.listExpand()) return
       this.model.insertText('\t')
     }
    
+  }
+
+  // list 向上收缩
+  listShrink(){
+    const { focusBlock } = this.selection
+
+    if(focusBlock.parent.type === 'list_item' && focusBlock.parent.parent.parent.type === 'list_item' ){
+      // this.model.deleteBlock(focusBlock.parent.id)
+      
+      if(focusBlock.parent.blocks.indexOf(focusBlock) === 0) {
+        const itemIndex = focusBlock.parent.parent.blocks.indexOf(focusBlock.parent)
+        if(itemIndex === 0 && focusBlock.parent.parent.parent.blocks.indexOf(focusBlock.parent.parent) === 0 ){
+          this.model.deleteBlock(focusBlock.parent.id)
+          this.model.insertBefore(focusBlock.parent.parent.parent, focusBlock.parent)
+          return
+        }
+        const nextList = this.createListBlock(null, focusBlock.parent.parent.ordered, 1, focusBlock.parent.parent.blocks.slice(itemIndex+1))
+        this.model.updateBlock(focusBlock.parent.parent, {blocks: focusBlock.parent.parent.blocks.slice(0, itemIndex)})
+        this.model.insertAfter(focusBlock.parent.parent.parent, focusBlock.parent)
+        this.model.insertAfter(focusBlock, nextList) 
+      }else{
+        // listitem 非首行退出
+        // const index = focusBlock.parent.blocks.indexOf(focusBlock)
+        // const blocks = focusBlock.parent.blocks.slice(index)
+        // this.model.updateBlock(focusBlock.parent, {blocks: focusBlock.parent.blocks.slice(0, index)})
+        return 
+      }
+   
+    }
+  }
+
+    // list 向下扩展
+  listExpand(){
+    const { focusBlock } = this.selection
+    const preTextBlock = this.getPreviousTextBlock(focusBlock.id)
+
+    if(focusBlock.parent.type === 'list_item' && preTextBlock.parent.type === 'list_item'){
+      if(focusBlock.parent.parent.blocks.indexOf(focusBlock.parent) !== 0 && focusBlock.parent.blocks.indexOf(focusBlock) === 0){
+        this.model.deleteBlock(focusBlock.parent.id)
+        this.model.insertAfter(preTextBlock, this.createListBlock(null, focusBlock.parent.parent.ordered, 1, [focusBlock.parent]))
+        return true
+      }
+    }
   }
 
   domToBlock(domNode) {
@@ -364,6 +430,18 @@ export class Editor {
   createHeading(text = "# ") {
     return { ...marked.lexer(text)[0], blocks: [] } as BlockInterface;
   }
+
+  createTable(len = 2) {
+    return { 
+      type: "table",
+      align: new Array(len).fill(null),
+      header: new Array(len).fill(null).map(() => this.createParagraphBlock()),
+      rows: [new Array(len).fill(null).map(() => this.createParagraphBlock())]
+    }
+  }
+
+  
+
   getPreviousBlock(block: BlockInterface) {
     const index = block.parent.blocks.indexOf(block);
     return index === 0 ? block.parent : block.parent.blocks[index - 1];
@@ -404,6 +482,33 @@ export class Editor {
   }
   toMDString(){
    return modelToMD(this.model._model)
+  }
+
+  insertAfterTableRow(tableBlock: BlockInterface, index: number){
+    let rows
+    const row = new Array(tableBlock.header.length).fill(1).map(() => this.createParagraphBlock())
+    if(index===0){
+      rows = [row, ...tableBlock.rows]
+    }else{
+      rows = [...tableBlock.rows]
+      rows.splice(index - 1, 0, row)
+    }
+    this.model.updateBlock(tableBlock, { rows })
+    this.model.normalize(tableBlock)
+  }
+  
+   deleteTableRow(tableBlock: BlockInterface, index){
+    let header = tableBlock.header, rows
+    if(index===1){
+      header = tableBlock.rows[0] || header
+      rows = [...tableBlock.rows]
+      rows.splice(0, 1)
+    }else{
+      rows = [...tableBlock.rows]
+      rows.splice(index - 2, 1)
+    }
+    this.model.updateBlock(tableBlock, { header, rows  })
+    this.model.normalize(tableBlock)
   }
 }
 

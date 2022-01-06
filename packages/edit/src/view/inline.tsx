@@ -63,12 +63,11 @@ const Strong =  React.memo(({ text, raw, tokens = [] }: InlineToken) => {
 })
 
 const Link =  React.memo(({ text, raw, href }: InlineToken) => {
-  // @ts-ignore
-  if (text === raw) return <a herf={href}>{text}</a>
-
+  if (text === raw) return <a href={href}>{text}</a>
+  
   return <span className='inline'>
     <span className="inline-before">[</span>
-    <a>{text}</a>
+    <a href={href}>{text}</a>
     <span className="inline-after">]</span>
     <span className="inline-meta">{raw.split("]")[1]}</span>
   </span>
@@ -86,8 +85,9 @@ const Escape =  React.memo(({ raw, text }: InlineToken) => {
 
 
 const Image = React.memo(({ text, raw, href }: InlineToken) => {
+  const click = (e) => window.getSelection().collapse(e.target.previousElementSibling)
   return <span className='inline'>
-    <span className="inline-meta">{raw}</span><img alt={text} src={href} />
+    <span className="inline-meta">{raw}</span><img onClick={click} alt={text} src={href} />
   </span>
 })
 

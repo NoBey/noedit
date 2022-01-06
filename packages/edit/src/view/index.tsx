@@ -57,9 +57,14 @@ export function Root() {
 
 
 
-  const click: MouseEventHandler =(event) => {
-    console.log(event.target)
-    console.log(event)
+  const click: MouseEventHandler = (event) => {
+    // console.log(event.target)
+    // console.log(event)
+    // @ts-ignore
+    if(event.target.tagName === 'A' && event.metaKey){
+      // @ts-ignore
+      window.open(event.target.href)
+    }
   }
 
   // editor.textPath.length = 0;

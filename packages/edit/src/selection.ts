@@ -2,7 +2,7 @@
 import { openTooltip } from "./component";
 import { EditorInterface } from "./editor";
 import { BlockInterface } from "./model";
-import { getKatexHtml, iterationTextNode } from "./utils";
+import { getKatexHtml, iterationTextBlock, iterationTextNode } from "./utils";
 
 export interface SelectionInterface extends Selection {}
 
@@ -28,8 +28,12 @@ export class Selection {
   }
 
   collapse(block, offset = 0) {
-    this.focusBlock = block;
-    this.focusOffset = offset;
+    for (let _block of iterationTextBlock(block)) {
+      this.focusBlock = _block;
+      this.focusOffset = offset <= (_block?.text?.length || 0) ? offset : (_block?.text?.length || 0);
+      return 
+    }
+    console.warn('Selection collapse undefined block', block)
     // const dom = Block.getTextByid(block.id);
     // dom && this.selection.collapse(dom, dom.nodeName === "BR" ? 0 : offset);
   }
@@ -88,7 +92,7 @@ export class Selection {
     Array.from(document.querySelectorAll(".md-table-focus")).forEach((dom) => {
       dom.classList.remove("md-table-focus");
     });
-    if (block.parent.type === "table") {
+    if (block?.parent?.type === "table") {
       editor.getDomByid(block.parent.id)?.classList.add("md-table-focus");
     }
   }
