@@ -130,7 +130,7 @@ export const Code = React.memo(forwardRef((props: any, ref: LegacyRef<HTMLDivEle
   if (props.lang === 'flow') return <div className="md-code md-flow-block" ref={ref} ><FlowCode {...props} /></div>
 
   const html = Prism.highlight(
-    props.text || '\n',
+    (props.text || "") + '\n',
     Prism.languages[props.lang] || Prism.languages.text,
     props.lang || 'text'
   );

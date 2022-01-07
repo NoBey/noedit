@@ -152,7 +152,7 @@ export class Model {
         createUpdateOperation(editor, startContainer.id, { text })
       );
     } else {
-      let text = startContainer.text.slice(0, startOffset);
+      let text = startContainer?.text?.slice?.(0, startOffset) || '';
       text += (endContainer?.text || '').slice(endOffset);
       this.updateBlock(startContainer, { text });
 

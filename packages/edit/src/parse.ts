@@ -3,6 +3,10 @@ import TurndownService from "turndown";
 import test from "./test1.md";
 import katex from "katex";
 
+marked.setOptions({
+  // breaks: true,
+})
+
 const blockMath = {
   name: "block-math",
   level: "block",

@@ -10,6 +10,7 @@ import {
   ListInputEvent,
   CodeInputEvent,
   TableInputEvent,
+  HeadingInputEvent
 } from "./inputEvent";
 import { History } from "./history";
 import { iterationTextNode } from "./utils";
@@ -122,6 +123,8 @@ export class Editor {
     this.inputStrategys.push(new ListInputEvent(this));
     this.inputStrategys.push(new CodeInputEvent(this));
     this.inputStrategys.push(new TableInputEvent(this));
+    this.inputStrategys.push(new HeadingInputEvent(this));
+    
 
     Event.on("block-change", this.blockChange.bind(this));
   }
@@ -242,9 +245,23 @@ export class Editor {
       }
  
      if(this.onKeyDownInTable(event)) return
+     if(this.onKeyDownInCode(event)) return
+
+
 
   }
 
+  onKeyDownInCode = (event: KeyboardEvent) => {
+    const { selection } = this
+    const { focusBlock, focusOffset } = selection
+    if(focusBlock?.type === 'code'){
+      if(event.key === 'Enter' && event.metaKey && focusOffset + 1 >= focusBlock.text.length) {
+        selection.collapse(this.getNextBlock(focusBlock))  
+        selection.reset()
+        return true
+      }
+    }
+  }
   onKeyDownInTable = (event: KeyboardEvent) => {
     const { selection } = this
     const { focusBlock } = selection

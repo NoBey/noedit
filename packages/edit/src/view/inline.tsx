@@ -154,7 +154,7 @@ export interface InlineToken {
 
 export const InlineText = React.memo( ({ text, id }: any) => {
   const tokens = lex.inlineTokens(text, [])
-  if (!text || !tokens.length) return <span><br /></span>
+  if (!text || !tokens.length) return <span dangerouslySetInnerHTML={{__html:"<br />"}}></span>
   return (
     <span>
       <InlineBlocks tokens={tokens} />
