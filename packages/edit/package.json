@@ -1,12 +1,12 @@
 {
   "name": "@noedit/core",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "dependencies": {
-    "@noedit/component": "^0.0.4",
-    "@noedit/icon": "^0.0.4",
+    "@noedit/component": "^0.0.5",
+    "@noedit/icon": "^0.0.5",
     "@rollup/plugin-typescript": "^8.3.0",
     "katex": "^0.15.1",
     "marked": "^4.0.6",
