@@ -29,5 +29,8 @@
     "url": "https://github.com/NoBey/noedit/issues"
   },
   "homepage": "https://github.com/NoBey/noedit#readme",
-  "gitHead": "4912611aae1b34b222f131d27f259f8a729cd05d"
+  "gitHead": "4c534943a357954a729ffa5a4b46269b27718a70",
+  "publishConfig": {
+    "access": "public"
+ }
 }
