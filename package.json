@@ -96,5 +96,8 @@
   "bugs": {
     "url": "https://github.com/NoBey/noedit/issues"
   },
-  "homepage": "https://github.com/NoBey/noedit#readme"
+  "homepage": "https://github.com/NoBey/noedit#readme",
+  "publishConfig": {
+    "access": "public"
+ }
 }

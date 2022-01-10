@@ -1,6 +1,6 @@
 {
   "name": "@noedit/icon",
-  "version": "1.0.6",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/index",
   "dependencies": {
@@ -29,5 +29,5 @@
     "url": "https://github.com/NoBey/noedit/issues"
   },
   "homepage": "https://github.com/NoBey/noedit#readme",
-  "gitHead": "940f1ef36349e372e23ff66a9dc56da66e344cc9"
+  "gitHead": "4912611aae1b34b222f131d27f259f8a729cd05d"
 }
