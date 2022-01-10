@@ -1,6 +1,6 @@
 {
   "name": "@noedit/core",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "main": "dist/index.js",
   "types": "src/index.tsx",
@@ -47,7 +47,7 @@
     "url": "https://github.com/NoBey/noedit/issues"
   },
   "homepage": "https://github.com/NoBey/noedit#readme",
-  "gitHead": "4c534943a357954a729ffa5a4b46269b27718a70",
+  "gitHead": "d3909be747150666cb6a582fac6a0281c0f4f90b",
   "publishConfig": {
     "access": "public"
   }
