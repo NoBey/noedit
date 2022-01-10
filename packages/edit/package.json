@@ -5,8 +5,8 @@
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "dependencies": {
-    "@noedit/component": "^1.0.6",
-    "@noedit/icon": "^1.0.6",
+    "@noedit/component": "^0.0.4",
+    "@noedit/icon": "^0.0.4",
     "@rollup/plugin-typescript": "^8.3.0",
     "katex": "^0.15.1",
     "marked": "^4.0.6",
