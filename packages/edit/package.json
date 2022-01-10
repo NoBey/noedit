@@ -1,10 +1,12 @@
 {
   "name": "@noedit/core",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "dependencies": {
+    "@noedit/component": "^1.0.1",
+    "@noedit/icon": "^1.0.1",
     "@rollup/plugin-typescript": "^8.3.0",
     "katex": "^0.15.1",
     "marked": "^4.0.6",
@@ -14,9 +16,7 @@
     "react-dom": "17.0.2",
     "react-is": "^17.0.2",
     "rollup-plugin-string": "^3.0.0",
-    "turndown": "^7.1.1",
-    "@noedit/icon": "1.0.0",
-    "@noedit/component": "1.0.0"
+    "turndown": "^7.1.1"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^21.0.1",
