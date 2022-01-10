@@ -13,6 +13,8 @@
     "start:core": "lerna run start --scope @noedit/core --stream",
     "start:example": "lerna run start --scope @noedit/example --stream",
     "build:test": "lerna run build-test --scope @noedit/example --stream",
+    "publish": "lerna publish",
+    "publish:force": "lerna publish --force-publish",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "test": "jest"
   },
