@@ -1,6 +1,6 @@
 {
   "name": "@noedit/component",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "",
   "main": "dist/index",
   "dependencies": {
@@ -32,5 +32,5 @@
   "gitHead": "4c534943a357954a729ffa5a4b46269b27718a70",
   "publishConfig": {
     "access": "public"
- }
+  }
 }
