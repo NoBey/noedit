@@ -1,12 +1,12 @@
 {
   "name": "@noedit/core",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "dependencies": {
-    "@noedit/component": "^1.0.3",
-    "@noedit/icon": "^1.0.3",
+    "@noedit/component": "^1.0.4",
+    "@noedit/icon": "^1.0.4",
     "@rollup/plugin-typescript": "^8.3.0",
     "katex": "^0.15.1",
     "marked": "^4.0.6",
@@ -46,5 +46,6 @@
   "bugs": {
     "url": "https://github.com/NoBey/noedit/issues"
   },
-  "homepage": "https://github.com/NoBey/noedit#readme"
+  "homepage": "https://github.com/NoBey/noedit#readme",
+  "gitHead": "6a8074e0a8f320d7f27bcdadc486fb38a47f9408"
 }
