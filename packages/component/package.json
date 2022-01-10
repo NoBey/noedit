@@ -1,6 +1,6 @@
 {
   "name": "@noedit/component",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "main": "dist/index",
   "dependencies": {
@@ -29,7 +29,7 @@
     "url": "https://github.com/NoBey/noedit/issues"
   },
   "homepage": "https://github.com/NoBey/noedit#readme",
-  "gitHead": "d3909be747150666cb6a582fac6a0281c0f4f90b",
+  "gitHead": "9c1db10c5c440a657d55f2dee85c0c7f20f7d75a",
   "publishConfig": {
     "access": "public"
   }
