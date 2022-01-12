@@ -8,17 +8,24 @@ export class HrInputEvent implements InputEventStrategy {
   }
   accept(inputType: string, event?: InputEvent) {
     const { editor } = this
-    if (inputType.startsWith("delete") && editor.selection.type === "Caret" && editor.selection.focusBlock.type === "hr") {
+    if (editor.selection.focusBlock.type === "hr") {
       return true
     }
     return false;
   }
-  execute(inputType: string, event?: InputEvent): void {
+  execute(inputType: string, event?: InputEvent): boolean {
     const { editor } = this
     if (inputType.startsWith("delete")) {
-      const newBlock = editor.createParagraphBlock()
-      editor.model.replaceBlock(editor.selection.focusBlock, newBlock);
-      editor.selection.collapse(newBlock)
+      // const newBlock = editor.createParagraphBlock()
+      // editor.model.replaceBlock(editor.selection.focusBlock, newBlock);
+      // editor.selection.collapse(newBlock)
     }
+    if (inputType.startsWith("insert")) {
+      // event.preventDefault()
+      // return true
+    }
+
+    return false
+    
   }
 }

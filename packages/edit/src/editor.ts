@@ -130,7 +130,6 @@ export class Editor {
     this.inputStrategys.push(new HeadingInputEvent(this));
     this.inputStrategys.push(new HrInputEvent(this));
     
-    
     Event.on("block-change", this.blockChange.bind(this));
   }
 
@@ -142,7 +141,7 @@ export class Editor {
     while (strategys.length) {
       const strategy = strategys.pop();
       if (strategy.accept(inputType, Event)) {
-        return strategy.execute(inputType, Event);
+        if(strategy.execute(inputType, Event)) return
       }
     }
   }

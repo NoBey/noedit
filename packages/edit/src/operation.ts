@@ -4,20 +4,20 @@
 
 import { EditorInterface } from "./editor"
 
-export const operations = []
+// export const operations = []
 
-let optimer
-export function startOperations(editor, op){
-  operations.push(op)
-  if(optimer) clearTimeout(optimer)
-  optimer = setTimeout(() => stopOperations(editor) , 10)
-}
-function stopOperations(editor){
-  const { focusBlock, focusOffset, type, range } = editor.selection
-  editor.history.add({ ops: [...operations] , focusBlock, focusOffset, type, range: range })
-  operations.length = 0
-}
+// let optimer
 
+// export function startOperations(editor, op){
+//   operations.push(op)
+//   if(optimer) clearTimeout(optimer)
+//   optimer = setTimeout(() => stopOperations(editor) , 10)
+// }
+// function stopOperations(editor){
+//   const { focusBlock, focusOffset, type, range } = editor.selection
+//   // editor.history.add({ ops: [...operations] , focusBlock, focusOffset, type, range: range })
+//   operations.length = 0
+// }
 
 export function createUpdateOperation(editor, id, arg) {
   const _arg = {}
@@ -47,7 +47,6 @@ export function createOperation(editor: EditorInterface, type, arg, invert?: any
     arg,
     invert
   }
-  if(invert) startOperations(editor, op)
-
+  // if(invert) startOperations(editor, op)
   return op;
 }

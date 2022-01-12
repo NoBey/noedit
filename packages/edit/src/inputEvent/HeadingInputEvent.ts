@@ -13,12 +13,13 @@ export class HeadingInputEvent implements InputEventStrategy {
     }
     return false;
   }
-  execute(inputType: string, event?: InputEvent): void {
+  execute(inputType: string, event?: InputEvent): boolean {
     const { editor } = this
     if (inputType.startsWith("delete")) {
       const newBlock = editor.createParagraphBlock(editor.selection.focusBlock.text)
       editor.model.replaceBlock(editor.selection.focusBlock, newBlock);
       editor.selection.collapse(newBlock)
     }
+    return true
   }
 }

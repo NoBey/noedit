@@ -16,7 +16,7 @@ export class CodeInputEvent implements InputEventStrategy {
       }
       return false;
     }
-    execute(inputType: string, event?: InputEvent): void {
+    execute(inputType: string, event?: InputEvent): boolean {
       const { editor } = this
 
       if (inputType === "insertParagraph") {
@@ -28,6 +28,7 @@ export class CodeInputEvent implements InputEventStrategy {
           editor.model.deleteContent(event.getTargetRanges()[0]);
         }
       }
+      return true
     }
   }
   

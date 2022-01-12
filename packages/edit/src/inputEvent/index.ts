@@ -2,7 +2,7 @@ import { EditorInterface } from '../editor'
 
 export interface InputEventStrategy {
     accept(inputType: string, event?: InputEvent): boolean;
-    execute(inputType: string, event?: InputEvent): void;
+    execute(inputType: string, event?: InputEvent): boolean;
 }
 
 export * from './BaseInputEvent'

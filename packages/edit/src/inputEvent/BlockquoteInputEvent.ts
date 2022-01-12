@@ -33,7 +33,7 @@ export class BlockquoteInputEvent implements InputEventStrategy {
   
       return false;
     }
-    execute(inputType: string, event?: InputEvent): void {
+    execute(inputType: string, event?: InputEvent): boolean {
       const { editor } = this
       const { selection } = editor
       const { focusOffset, focusBlock } = selection;
@@ -44,7 +44,8 @@ export class BlockquoteInputEvent implements InputEventStrategy {
         focusBlock.parent.blocks.indexOf(focusBlock) === 0
       ) {
         editor.model.deleteBlock(focusBlock.id)
-        return editor.model.insertBefore(focusBlock.parent, focusBlock);
+        editor.model.insertBefore(focusBlock.parent, focusBlock);
+        return true
       }
   
       if (
@@ -57,14 +58,14 @@ export class BlockquoteInputEvent implements InputEventStrategy {
         if(focusBlock.parent.blocks.indexOf(focusBlock) === 0){
           editor.model.deleteBlock(focusBlock.id)
           editor.model.insertBefore(focusBlock.parent, focusBlock)
-          return
+          return true
         }
 
         // 尾部退出
         if(focusBlock.parent.blocks.indexOf(focusBlock) + 1 === focusBlock.parent.blocks.length){
           editor.model.deleteBlock(focusBlock.id)
           editor.model.insertAfter(focusBlock.parent, focusBlock)
-          return
+          return true
         }
 
         // 分割
@@ -72,7 +73,8 @@ export class BlockquoteInputEvent implements InputEventStrategy {
         editor.model.deleteBlock(focusBlock.id)
         editor.model.insertAfter(focusBlock.parent, focusBlock)
 
-        return 
+        return true
       }
+      return true
     }
   }

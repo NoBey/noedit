@@ -36,7 +36,7 @@ export class ListInputEvent implements InputEventStrategy {
 
     return false;
   }
-  execute(inputType: string, event?: InputEvent): void {
+  execute(inputType: string, event?: InputEvent): boolean {
     const { editor } = this
     const { selection } = editor
     const { focusOffset, focusBlock } = selection;
@@ -66,7 +66,7 @@ export class ListInputEvent implements InputEventStrategy {
           ) {
             editor.model.deleteBlock(focusBlock.parent.id);
             editor.model.insertAfter(focusBlock.parent.parent, focusBlock);
-            return;
+            return true;
           }
 
           // 切割 list
@@ -74,7 +74,7 @@ export class ListInputEvent implements InputEventStrategy {
             editor.model.splitList(focusBlock.parent.parent, focusBlock.parent.parent.blocks.indexOf(focusBlock.parent))
             editor.model.deleteBlock(focusBlock.parent.id)
             editor.model.insertAfter(focusBlock.parent.parent, focusBlock);
-            return
+            return true;
           } 
 
         }
@@ -107,5 +107,6 @@ export class ListInputEvent implements InputEventStrategy {
         editor.model.deleteBlock(focusBlock.id);
       }
     }
+    return true
   }
 }

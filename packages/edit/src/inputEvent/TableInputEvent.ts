@@ -29,7 +29,7 @@ export class TableInputEvent implements InputEventStrategy {
   
       return false;
     }
-    execute(inputType: string, event?: InputEvent): void {
+    execute(inputType: string, event?: InputEvent): boolean {
       const { editor } = this
       const { selection } = editor
       const { focusOffset, focusBlock } = selection;
@@ -45,5 +45,7 @@ export class TableInputEvent implements InputEventStrategy {
         editor.model.deleteBlock( focusBlock.parent.id )
         selection.collapse(block, block.text.length);
       }
+
+      return true
     }
   }

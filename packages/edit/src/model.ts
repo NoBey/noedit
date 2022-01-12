@@ -113,7 +113,7 @@ export class Model {
         ({ id }) => id !== arg.id
       );
     }
-
+    Event.emit("apply-operation", operation);
     this.applyModelChange();
   }
 
@@ -196,7 +196,7 @@ export class Model {
     if (["{", "[", "("].includes(data)) {
       text += { "{": "}", "[": "]", "(": ")" }[data];
     }
-    text += selection.focusBlock.text.slice(focusOffset);
+    text += selection.focusBlock?.text?.slice?.(focusOffset) || '';
 
     this.applyOperation(
       createUpdateOperation(this.editor, selection.focusBlock.id, { text })

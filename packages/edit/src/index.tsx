@@ -6,21 +6,18 @@ import { Edit, Root } from "./view";
 import { Editor } from "./editor";
 import test from "./test1.md";
 
-const editor = new Editor({md: `${test}`})
-// @ts-ignore
-window.editor = editor
+
+export { Editor, Edit, Root }
+
+
 export function App() {
-  console.log('App')
-  // const [model, setModel] = useState(editor.model._model);
-  useEffect(() => {
-    // editor.model.onChange(() => setModel({ ...editor.model._model }));
-  }, []);
+  const editor = new Editor({ md: `${test}` })
+  // @ts-ignore 
+  window.editor = editor
   return <Edit editor={editor}>
     <Root />
   </Edit>
 }
-
-
 
 
 // const root = document.createElement('div');
