@@ -156,6 +156,7 @@ export class Editor {
   insertParagraphBefore(event){
     const { selection, model } = this;
     const { focusBlock } = selection;
+    if(focusBlock.type === 'hr') return
 
     if (
       focusBlock.text.trimEnd() === "$$" &&
