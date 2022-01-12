@@ -171,11 +171,11 @@ export class Editor {
     }
 
     if (
-      /^\`{3,10}/.test(focusBlock.text) &&
+      /^\`{3,10}[A-Za-z0-9]*$/.test(focusBlock.text) &&
       focusBlock.type === "paragraph"
     ) {
       const newBlock = this.createCodeBlock(
-        focusBlock.text.replace(/^\`{3,10}/, "")
+        focusBlock.text.replace(/^\`{3,10}[A-Za-z0-9]*$/, "")
       );
       model.replaceBlock(focusBlock, newBlock);
 
