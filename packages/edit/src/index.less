@@ -26,15 +26,9 @@ body {
   // overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   box-sizing: content-box;
-
 }
 
-.md-hr {
-  -webkit-user-modify: read-write-plaintext-only;
-  &:focus {
-    outline: blue auto 5px;
-  }
-}
+
 
 .md-list-task-item {
   list-style-type: none;
@@ -50,14 +44,24 @@ body {
 a {
   color: #4183c4;
 }
-.md-hr hr {
-  height: 2px;
-  padding: 0;
+
+.md-hr-focus{
+  outline: #4183c4 auto 5px;
+}
+.md-hr {
+  line-height: 1;
   margin: 16px 0;
-  background-color: #e7e7e7;
-  border: 0 none;
-  overflow: hidden;
-  box-sizing: content-box;
+
+  & hr {
+    height: 2px;
+    padding: 0;
+    background-color: #e7e7e7;
+    border: 0 none;
+    overflow: hidden;
+    box-sizing: content-box;
+    display: inline-block;
+    width: 100%;
+  }
 }
 
 .inline {
@@ -71,7 +75,7 @@ a {
   img {
     display: inline;
   }
-  a{
+  a {
     cursor: pointer;
   }
   code {
@@ -251,7 +255,9 @@ tr:nth-child(even) {
 // https://theme.typora.io/theme/Lark/
 
 .md-table-focus {
-  .table-tools,.table-control-left, .table-control-top {
+  .table-tools,
+  .table-control-left,
+  .table-control-top {
     display: block !important;
   }
 }
@@ -279,7 +285,7 @@ tr:nth-child(even) {
     left: -12px;
     cursor: pointer;
     user-select: none;
-    transition: all 0.2s ease-in,color 0.1s ease-out;
+    transition: all 0.2s ease-in, color 0.1s ease-out;
 
     &:hover {
       background: rgba(0, 0, 0, 0.1);
@@ -296,7 +302,7 @@ tr:nth-child(even) {
     left: 0;
     cursor: pointer;
     user-select: none;
-    transition: all 0.2s ease-in,color 0.1s ease-out;
+    transition: all 0.2s ease-in, color 0.1s ease-out;
     &:hover {
       background: rgba(0, 0, 0, 0.1);
     }
@@ -354,10 +360,7 @@ tr:nth-child(even) {
   }
 }
 
-
-
-
-.toolbar{
+.toolbar {
   display: flex;
   background: #fff;
   border: 1px solid;

@@ -10,7 +10,8 @@ import {
   ListInputEvent,
   CodeInputEvent,
   TableInputEvent,
-  HeadingInputEvent
+  HeadingInputEvent,
+  HrInputEvent
 } from "./inputEvent";
 import { History } from "./history";
 import { iterationTextNode } from "./utils";
@@ -87,6 +88,9 @@ function ConvertBlock(editor: EditorInterface, block: BlockInterface) {
 
 //\\
 export interface EditorInterface extends Editor {}
+export interface EditorOptions {
+  md?: string
+} 
 
 export class Editor {
   model: ModelInterface;
@@ -104,7 +108,7 @@ export class Editor {
     const stack: BlockInterface[] = [this.model._model]
     while (stack.length) {
       let block = stack.pop()
-      if( ['paragraph','heading', 'code'].includes(block.type)){
+      if( ['paragraph','heading', 'code', 'hr'].includes(block.type)){
          list.push(block.id)
       }
       stack.push(...([...block.blocks||[]]).reverse())
@@ -112,9 +116,9 @@ export class Editor {
     return list
   }
 
-  constructor() {
+  constructor({ md = ''}: EditorOptions) {
     this.history = new History(this);
-    this.model = new Model(this, parseMD());
+    this.model = new Model(this, parseMD(md));
     this.selection = new Selection(this);
     this.clipboard = new clipboard(this)
 
@@ -124,8 +128,9 @@ export class Editor {
     this.inputStrategys.push(new CodeInputEvent(this));
     this.inputStrategys.push(new TableInputEvent(this));
     this.inputStrategys.push(new HeadingInputEvent(this));
+    this.inputStrategys.push(new HrInputEvent(this));
     
-
+    
     Event.on("block-change", this.blockChange.bind(this));
   }
 
@@ -222,7 +227,7 @@ export class Editor {
   onCompositionupdate = () => {};
   onCompositionend = (event: CompositionEvent) => {
     this.isComposing = false;
-    console.log("onDomCompositionend", event.data);
+    // console.log("onDomCompositionend", event.data);
     this.selection.focusOffset = this.compositionOffset;
     this.model.insertText(event.data);
   };
@@ -233,7 +238,7 @@ export class Editor {
         this.tabKeyDown(event)
         event.preventDefault()
       }
-      console.log(event.key, event)
+      // console.log(event.key, event)
       event.stopPropagation()
       if (event.metaKey && event.key === "z") {
         this.history.undo();

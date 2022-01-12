@@ -85,6 +85,17 @@ export class Selection {
       editor.getDomByid(block.id)?.classList.add("md-code-focus");
     }
   }
+  focusHr({ focusNode }) {
+    const { editor } = this
+    const block = editor.domToBlock(focusNode);
+    Array.from(document.querySelectorAll(".md-hr-focus")).forEach((dom) => {
+      dom.classList.remove("md-hr-focus");
+    });
+    if (block.type === "hr") {
+      editor.getDomByid(block.id)?.classList.add("md-hr-focus");
+    }
+  }
+  
 
   focusTable({ focusNode }) {
     const {editor } = this
@@ -119,13 +130,19 @@ export class Selection {
     }
   }
 
+  getRange(){
+    if(this.type !== "Range") return null
+    const { startContainer, startOffset, endContainer, endOffset } = this
+    return { startContainer, startOffset, endContainer, endOffset }
+  }
 
   change() {
     const { selection, editor } = this;
-    console.log("change", selection);
+    // console.log("change", selection);
 
     if (selection.type === "Caret") {
       this.focusInline(selection);
+      this.focusHr(selection)
       this.focusCode(selection);
       this.focusTable(selection);
       this.fixLastLine()

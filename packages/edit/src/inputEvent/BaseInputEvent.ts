@@ -13,7 +13,26 @@ export class BaseInputEvent implements InputEventStrategy {
   execute(inputType: string, event?: InputEvent): void {
     const { editor } = this
     if (inputType.startsWith('delete')) {
-      editor.model.deleteContent(event.getTargetRanges()[0]);
+      if(inputType === 'deleteContentBackward' && editor.selection.type === 'Caret' && editor.selection.focusOffset === 0){
+        // 接管向上删除行
+        const { focusBlock } = editor.selection
+        const index = editor.textPath.indexOf(focusBlock.id)
+        let startContainer = editor.getBlockByid(editor.textPath[index-1]) 
+        if(startContainer.type === 'hr'){
+          const p = editor.createParagraphBlock()
+          editor.model.replaceBlock(startContainer, p)
+          editor.model.normalize(startContainer.parent)
+          startContainer = p
+        }
+        editor.model.deleteContent({
+          startContainer,
+          startOffset: startContainer?.text?.length || 0,
+          endContainer: focusBlock,
+          endOffent: 0
+        });
+      }else{
+        editor.model.deleteContent(event.getTargetRanges()[0]);
+      }
     }
     if (inputType === 'insertText') {
       editor.model.deleteContent(event.getTargetRanges()[0]);

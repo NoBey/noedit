@@ -1,11 +1,7 @@
 import { marked } from "marked";
 import TurndownService from "turndown";
-import test from "./test1.md";
-import katex from "katex";
 
-marked.setOptions({
-  // breaks: true,
-})
+import katex from "katex";
 
 const blockMath = {
   name: "block-math",
@@ -16,21 +12,10 @@ const blockMath = {
     if (match) {
       return {
         type: "code",
-        // type: 'inline-math',
         lang: "math",
         raw: match[0],
         text: match[2],
       };
-      //    if(match.index === 0){
-      //     return {
-      //       type: 'inline-math',
-      //       raw: match[0],
-      //       text: match[0].substr(1, match[0].length - 2),
-      //     };
-      //    }
-      //  const list = (this.lexer.inlineTokens(src.slice(0, match.index)))
-      //  const pre = list[0]
-      //  return pre
     }
   },
   renderer(token) {
@@ -88,9 +73,6 @@ export function HtmlToModel(html) {
   return parseMD(parseHtml(html)).blocks;
 }
 
-let defaultTxt = `
-${test}
-`;
 
 function formatBlock(token) {
   if (
@@ -106,8 +88,8 @@ function formatBlock(token) {
       "space"
     ].includes(token.type)
   ) {
-    if ("space" === token.type){
-      return { type: "paragraph", blocks:[], text: "", isBlock: true}
+    if ("space" === token.type) {
+      return { type: "paragraph", blocks: [], text: "", isBlock: true }
     }
     const block = { blocks: [], ...token, isBlock: true };
     if (block.type === "list_item") {
@@ -137,9 +119,8 @@ function formatBlock(token) {
 }
 // @ts-ignore
 window.parseMD = parseMD
-export function parseMD(md = defaultTxt) {
+export function parseMD(md) {
   const tokens = marked.lexer(md); // new marked.Lexer({ breaks: true }).lex(md);
-  console.log(tokens);
   return {
     type: "root",
     blocks: tokens.map(formatBlock).filter((n) => n),
@@ -148,75 +129,57 @@ export function parseMD(md = defaultTxt) {
 
 // @ts-ignore
 window.modelToMD = modelToMD
-export function modelToMD(model){
-  // if(model.type === 'root')
+export function modelToMD(model) {
   return model.blocks.map((block) => blockToMD(block)).join('\n')
 }
 
 
-function headDepth(depth){
+function headDepth(depth) {
   return new Array(depth).fill('#').join('')
 }
 
-function listDepth(depth){
-  console.log({depth})
+function listDepth(depth) {
+  console.log({ depth })
   return new Array(depth * 2).fill(' ').join('')
 }
 
-function tableAlign(align){
-  if(align === "center") return ":--:"
-  if(align === "right") return "---:"
-  if(align === "left") return ":---"
+function tableAlign(align) {
+  if (align === "center") return ":--:"
+  if (align === "right") return "---:"
+  if (align === "left") return ":---"
   return '----'
 }
 
-export function blockToMD(block, listIndex = 0){
-  const { type, text, blocks = []} = block
+export function blockToMD(block, listIndex = 0) {
+  const { type, text, blocks = [] } = block
   const childMD = blocks.map(block => blockToMD(block))
-  if(type === 'paragraph') return text
-  if(type === 'heading') return `${headDepth(block.depth)} ${text}` 
-  if(type === 'blockquote') return childMD.map(md => `> ${md}`).join('\n')
-  if(type === 'hr') return '---\n'
-  if(type === 'list_item') {
+  if (type === 'paragraph') return text
+  if (type === 'heading') return `${headDepth(block.depth)} ${text}`
+  if (type === 'blockquote') return childMD.map(md => `> ${md}`).join('\n')
+  if (type === 'hr') return '---\n'
+  if (type === 'list_item') {
     const { task, checked } = block
-    return '- ' + (task ? `[${checked ? 'x' : ' '}] ` : "" )+ childMD.join('\n').split('\n').join('\n' + '  ')
+    return '- ' + (task ? `[${checked ? 'x' : ' '}] ` : "") + childMD.join('\n').split('\n').join('\n' + '  ')
   }
 
-  if(type === 'list') {
-    const { ordered, start = 1} = block
-    if(ordered){
+  if (type === 'list') {
+    const { ordered, start = 1 } = block
+    if (ordered) {
       return childMD.map((md, i) => `${start + i}. ${md.slice(2)}`).join('\n')
     }
     return childMD.map(md => `${md}`).join('\n')
   }
-  if(type === 'code') {
+  if (type === 'code') {
     return '```' + block.lang + '\n' + text + '\n```'
   }
-  if(type === 'table') {
+  if (type === 'table') {
     const { header = [], rows, align } = block
-    let html =  `| ${header.map(blockToMD).join(' | ')} |\n`
-    html +=  `| ${align.map(tableAlign).join(' | ')} |\n`
+    let html = `| ${header.map(blockToMD).join(' | ')} |\n`
+    html += `| ${align.map(tableAlign).join(' | ')} |\n`
     rows.forEach(row => {
-      html +=  `| ${row.map(blockToMD).join(' | ')} |\n`
+      html += `| ${row.map(blockToMD).join(' | ')} |\n`
     });
     return html
   }
 
 }
-
-// function normalize(block, parent) {
-//     block.parent = parent;
-//     if (!block.id) block.id = ++index;
-//     idToBlock[block.id] = block;
-//     if (["list_item", "blockquote", "list"].includes(block.type)) {
-//       if (block.blocks.length === 0) {
-//         editor.deleteBlock(block.id);
-//       }
-//     }
-//     block.blocks.forEach((b) => normalize(b, block));
-//     return block;
-//   }
-
-//   function formatRoot(tokens) {
-//     return ;
-//   }

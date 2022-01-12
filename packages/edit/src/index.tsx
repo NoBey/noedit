@@ -3,12 +3,10 @@ import ReactDOM from "react-dom";
 import React, { useEffect, useState } from "react";
 import "./index.less";
 import { Edit, Root } from "./view";
-// import { editor } from "./editor";
-// import { Menu } from './component';
 import { Editor } from "./editor";
-// .lexer('> I am using marked.')
+import test from "./test1.md";
 
-const editor = new Editor
+const editor = new Editor({md: `${test}`})
 // @ts-ignore
 window.editor = editor
 export function App() {

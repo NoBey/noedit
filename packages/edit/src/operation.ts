@@ -32,7 +32,6 @@ export function createUpdateOperation(editor, id, arg) {
 }
 
 export function createDelOperation(editor, id) {
-  console.log('del',id)
   const block = editor.getBlockByid(id)
   const arg = { id: block.parent.id, blocks: [...block.parent.blocks] }
 

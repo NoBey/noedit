@@ -80,7 +80,7 @@ module.exports = {
 
   devServer: {
     host: 'localhost',
-    port: 8080,
+    port: 8888,
     compress: false,
     host: "0.0.0.0"
   },

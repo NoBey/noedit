@@ -123,9 +123,9 @@ export class Model {
 
   deleteContent(range) {
     const { editor } = this
+    const _range = range instanceof StaticRange ? editor.range(range) : range
     const { selection } = this.editor
-    const { startContainer, endContainer, startOffset, endOffset } =
-    editor.range(range);
+    const { startContainer, endContainer, startOffset, endOffset } = _range
 //  console.log(range,  editor.range(range))
     if (startContainer === endContainer) {
       if (startOffset === endOffset) return;
@@ -201,7 +201,7 @@ export class Model {
     this.applyOperation(
       createUpdateOperation(this.editor, selection.focusBlock.id, { text })
     );
-    console.log(focusOffset, data.length, data, text)
+    // console.log(focusOffset, data.length, data, text)
     selection.collapse(focusBlock, focusOffset + data.length);
     Event.emit("block-change", focusBlock);
   }
