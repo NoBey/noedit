@@ -1,12 +1,12 @@
 {
   "name": "@noedit/core",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "",
   "main": "dist/index.js",
   "types": "src/index.tsx",
   "dependencies": {
-    "@noedit/component": "^0.0.7",
-    "@noedit/icon": "^0.0.7",
+    "@noedit/component": "^0.0.8",
+    "@noedit/icon": "^0.0.8",
     "@rollup/plugin-typescript": "^8.3.0",
     "flowchart.js": "^1.17.0",
     "katex": "^0.15.1",
